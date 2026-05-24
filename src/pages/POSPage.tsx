@@ -10,6 +10,12 @@ import {
 } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import {
+  POS_THEMES,
+  loadPosTheme,
+  savePosTheme,
+  type PosThemeId,
+} from '../lib/posThemes';
+import {
   Search,
   Barcode,
   ShoppingCart,
@@ -21,7 +27,6 @@ import {
   Plus,
   X,
   Printer,
-  FileText,
   ChevronDown,
   Check,
   Clock,
@@ -61,6 +66,14 @@ export default function POSPage() {
   const [saving, setSaving] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<Invoice | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [posTheme, setPosTheme] = useState<PosThemeId>(loadPosTheme);
+  const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState('');
+
+  const handleThemeChange = (id: PosThemeId) => {
+    setPosTheme(id);
+    savePosTheme(id);
+  };
 
   const printReceipt = (invoice: Invoice) => {
     const paymentTypeLabel = invoice.payment_type === 'cash' ? 'نقدي' : invoice.payment_type === 'debt' ? 'دين' : 'دفع جزئي';
@@ -277,6 +290,9 @@ export default function POSPage() {
     setShowSearch(false);
     setSearchTerm('');
     setSearchResults([]);
+    if (window.innerWidth < 1024) {
+      setMobileCartOpen(true);
+    }
     barcodeInputRef.current?.focus();
   };
 
@@ -464,6 +480,7 @@ export default function POSPage() {
 
       setLastInvoice(invoice);
       setShowSuccess(true);
+      setMobileCartOpen(false);
       clearCart();
     } catch (error) {
       console.error('Error processing sale:', error);
@@ -473,15 +490,51 @@ export default function POSPage() {
     }
   };
 
+  const filteredCustomersList = customerSearch.trim()
+    ? customers.filter((c) =>
+        c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+        c.phone?.includes(customerSearch)
+      )
+    : customers;
+
+  const openPayment = () => {
+    setMobileCartOpen(false);
+    setShowPayment(true);
+  };
+
   return (
-    <div className="h-[calc(100vh-8rem)] flex gap-6 animate-fade-in">
-      {/* Products Section */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="card p-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Barcode Scanner */}
+    <div className="pos-page animate-fade-in" data-pos-theme={posTheme}>
+      {mobileCartOpen && (
+        <button
+          type="button"
+          className="pos-cart-backdrop lg:hidden"
+          aria-label="إغلاق السلة"
+          onClick={() => setMobileCartOpen(false)}
+        />
+      )}
+
+      <div className={`pos-products-panel ${cart.length > 0 ? 'has-cart-bar' : ''}`}>
+        <div className="pos-toolbar mb-2 shrink-0">
+          <span className="pos-toolbar-title">نقطة البيع</span>
+          <div className="pos-theme-picker" role="group" aria-label="اختيار الثيم">
+            {POS_THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                title={t.label}
+                aria-label={t.label}
+                aria-pressed={posTheme === t.id}
+                onClick={() => handleThemeChange(t.id)}
+                className={`pos-theme-btn ${posTheme === t.id ? 'active' : ''}`}
+                style={{ backgroundColor: t.swatch }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="pos-search-bar mb-2 shrink-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="relative">
-              <Barcode className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Barcode className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" style={{ color: 'var(--pos-muted)' }} />
               <input
                 ref={barcodeInputRef}
                 type="text"
@@ -491,10 +544,8 @@ export default function POSPage() {
                 dir="ltr"
               />
             </div>
-
-            {/* Search Products */}
             <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" style={{ color: 'var(--pos-muted)' }} />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -504,25 +555,30 @@ export default function POSPage() {
                 className="input-field pr-11"
                 placeholder="بحث عن منتج..."
               />
-
               {showSearch && searchTerm.length >= 2 && (
-                <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-10">
+                <div className="pos-dropdown absolute top-full mt-1 left-0 right-0 max-h-64 overflow-y-auto z-20">
                   {searchResults.length > 0 ? (
                     searchResults.map((product) => (
                       <button
                         key={product.id}
+                        type="button"
                         onClick={() => addToCart(product)}
-                        className="w-full p-3 text-right hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 last:border-0"
+                        className="pos-dropdown-item w-full p-3 text-right flex items-center justify-between border-b last:border-0"
+                        style={{ borderColor: 'var(--pos-border)' }}
                       >
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-gray-500">{formatCurrency(product.selling_price)}/{SELL_UNIT} — {formatStockDisplay(product)}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{product.name}</p>
+                          <p className="text-sm" style={{ color: 'var(--pos-muted)' }}>
+                            {formatCurrency(product.selling_price)}/{SELL_UNIT} — {formatStockDisplay(product)}
+                          </p>
                         </div>
-                        <Plus className="w-5 h-5 text-blue-600" />
+                        <Plus className="w-5 h-5 shrink-0" style={{ color: 'var(--pos-primary)' }} />
                       </button>
                     ))
                   ) : (
-                    <div className="p-4 text-center text-gray-500">لا توجد نتائج</div>
+                    <div className="p-4 text-center" style={{ color: 'var(--pos-muted)' }}>
+                      لا توجد نتائج
+                    </div>
                   )}
                 </div>
               )}
@@ -530,108 +586,128 @@ export default function POSPage() {
           </div>
         </div>
 
-        {/* Quick Products Grid */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div className="flex-1 overflow-y-auto min-h-0 -webkit-overflow-scrolling-touch">
+          <div className="pos-product-grid">
             {products.map((product) => (
               <button
                 key={product.id}
+                type="button"
                 onClick={() => addToCart(product)}
-                className="card-hover p-3 text-right"
+                className="pos-product-btn"
               >
-                <div className="aspect-square bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                <div
+                  className="aspect-square rounded-lg mb-1.5 flex items-center justify-center overflow-hidden"
+                  style={{ background: 'var(--pos-surface-alt)' }}
+                >
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
-                    <ShoppingCart className="w-8 h-8 text-gray-400" />
+                    <ShoppingCart className="w-7 h-7 opacity-40" />
                   )}
                 </div>
-                <p className="font-medium text-sm line-clamp-2">{product.name}</p>
-                <p className="text-blue-600 font-bold mt-1">{formatCurrency(product.selling_price)}</p>
-                <p className="text-xs text-gray-500">{formatStockDisplay(product)}</p>
+                <p className="font-medium text-xs sm:text-sm line-clamp-2 leading-snug">{product.name}</p>
+                <p className="pos-product-price text-sm mt-0.5">{formatCurrency(product.selling_price)}</p>
+                <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--pos-muted)' }}>
+                  {formatStockDisplay(product)}
+                </p>
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Cart Section */}
-      <div className="w-96 flex flex-col card">
-        {/* Cart Header */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-lg">السلة</h2>
-            <span className="badge badge-info">{cart.length} منتج</span>
-          </div>
+      <div className={`pos-cart-panel ${mobileCartOpen ? 'is-open' : ''}`}>
+        <button
+          type="button"
+          className="pos-cart-handle w-full lg:hidden"
+          onClick={() => setMobileCartOpen(false)}
+          aria-label="إغلاق السلة"
+        >
+          <div className="pos-cart-handle-bar" />
+        </button>
 
-          {/* Customer Selection */}
+        <div className="p-3 sm:p-4 border-b shrink-0" style={{ borderColor: 'var(--pos-border)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-bold text-base sm:text-lg">السلة</h2>
+            <span className="pos-badge">{cart.length}</span>
+          </div>
           <div className="relative">
             <button
+              type="button"
               onClick={() => setShowCustomerSelect(!showCustomerSelect)}
-              className="w-full p-3 border border-gray-300 rounded-lg flex items-center justify-between hover:bg-gray-50"
+              className="w-full p-3 rounded-lg flex items-center justify-between min-h-[44px]"
+              style={{ border: '1px solid var(--pos-border)', background: 'var(--pos-surface-alt)' }}
             >
-              <div className="flex items-center gap-2">
-                <User className="w-5 h-5 text-gray-400" />
-                {selectedCustomer ? (
-                  <span className="text-gray-900">{selectedCustomer.name}</span>
-                ) : (
-                  <span className="text-gray-500">عميل نقدي</span>
-                )}
+              <div className="flex items-center gap-2 min-w-0">
+                <User className="w-5 h-5 shrink-0" style={{ color: 'var(--pos-muted)' }} />
+                <span className="truncate">
+                  {selectedCustomer ? selectedCustomer.name : 'عميل نقدي'}
+                </span>
               </div>
-              <ChevronDown className="w-5 h-5 text-gray-400" />
+              <ChevronDown className="w-5 h-5 shrink-0" style={{ color: 'var(--pos-muted)' }} />
             </button>
-
             {showCustomerSelect && (
-              <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-200 max-h-72 overflow-y-auto z-10">
+              <div className="pos-dropdown absolute top-full mt-1 left-0 right-0 max-h-64 overflow-y-auto z-30">
                 <button
+                  type="button"
                   onClick={() => {
                     setSelectedCustomer(null);
                     setShowCustomerSelect(false);
+                    setCustomerSearch('');
                   }}
-                  className={`w-full p-3 text-right hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100 ${!selectedCustomer ? 'bg-blue-50' : ''}`}
+                  className={`pos-dropdown-item w-full p-3 text-right flex items-center gap-2 border-b ${!selectedCustomer ? 'selected' : ''}`}
+                  style={{ borderColor: 'var(--pos-border)' }}
                 >
-                  <Check className={`w-5 h-5 ${!selectedCustomer ? 'text-blue-600' : 'text-transparent'}`} />
+                  <Check className={`w-5 h-5 shrink-0 ${!selectedCustomer ? '' : 'opacity-0'}`} style={{ color: 'var(--pos-primary)' }} />
                   عميل نقدي
                 </button>
-
-                {/* Add new customer button */}
                 <button
+                  type="button"
                   onClick={() => {
                     setShowAddCustomer(true);
                     setShowCustomerSelect(false);
                   }}
-                  className="w-full p-3 text-right hover:bg-green-50 flex items-center gap-2 text-green-700 border-b border-gray-100"
+                  className="pos-dropdown-item w-full p-3 text-right flex items-center gap-2 border-b text-green-700"
+                  style={{ borderColor: 'var(--pos-border)' }}
                 >
-                  <UserPlus className="w-5 h-5" />
+                  <UserPlus className="w-5 h-5 shrink-0" />
                   <span className="font-medium">إضافة عميل جديد</span>
                 </button>
-
-                {/* Search hint */}
                 {customers.length > 5 && (
-                  <div className="p-2 bg-gray-50 border-b border-gray-100">
+                  <div className="p-2 border-b" style={{ borderColor: 'var(--pos-border)' }}>
                     <input
                       type="text"
+                      value={customerSearch}
+                      onChange={(e) => setCustomerSearch(e.target.value)}
                       placeholder="بحث عن عميل..."
-                      className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-right"
+                      className="input-field text-sm"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
                 )}
-
-                {customers.map((customer) => (
+                {filteredCustomersList.map((customer) => (
                   <button
                     key={customer.id}
+                    type="button"
                     onClick={() => {
                       setSelectedCustomer(customer);
                       setShowCustomerSelect(false);
+                      setCustomerSearch('');
                     }}
-                    className={`w-full p-3 text-right hover:bg-gray-50 flex items-center gap-2 ${selectedCustomer?.id === customer.id ? 'bg-blue-50' : ''}`}
+                    className={`pos-dropdown-item w-full p-3 text-right flex items-center gap-2 ${
+                      selectedCustomer?.id === customer.id ? 'selected' : ''
+                    }`}
                   >
-                    <Check className={`w-5 h-5 ${selectedCustomer?.id === customer.id ? 'text-blue-600' : 'text-transparent'}`} />
-                    <div>
-                      <p className="font-medium">{customer.name}</p>
+                    <Check
+                      className={`w-5 h-5 shrink-0 ${selectedCustomer?.id === customer.id ? '' : 'opacity-0'}`}
+                      style={{ color: 'var(--pos-primary)' }}
+                    />
+                    <div className="min-w-0 text-right">
+                      <p className="font-medium truncate">{customer.name}</p>
                       {customer.debt_balance > 0 && (
-                        <p className="text-xs text-red-600">دين: {formatCurrency(customer.debt_balance)}</p>
+                        <p className="text-xs" style={{ color: 'var(--pos-danger)' }}>
+                          دين: {formatCurrency(customer.debt_balance)}
+                        </p>
                       )}
                     </div>
                   </button>
@@ -641,85 +717,109 @@ export default function POSPage() {
           </div>
         </div>
 
-        {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 min-h-[120px]">
           {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <ShoppingCart className="w-16 h-16 mb-4" />
+            <div className="flex flex-col items-center justify-center py-8" style={{ color: 'var(--pos-muted)' }}>
+              <ShoppingCart className="w-14 h-14 mb-3 opacity-40" />
               <p>السلة فارغة</p>
+              <p className="text-xs mt-1">اضغط على منتج لإضافته</p>
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.product.id} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{item.product.name}</p>
-                    <p className="text-gray-500 text-xs">{formatCurrency(item.unit_price)}</p>
+              <div key={item.product.id} className="pos-cart-item">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{item.product.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--pos-muted)' }}>
+                      {formatCurrency(item.unit_price)}
+                    </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => removeFromCart(item.product.id)}
-                    className="p-1 text-red-500 hover:bg-red-100 rounded"
+                    className="p-2 rounded-lg shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    style={{ color: 'var(--pos-danger)' }}
+                    aria-label="حذف"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateQuantity(item.product.id, -1)}
-                      className="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
-                    >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <button type="button" onClick={() => updateQuantity(item.product.id, -1)} className="pos-qty-btn">
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="w-auto min-w-8 text-center font-medium">{item.quantity} {SELL_UNIT}</span>
-                    <button
-                      onClick={() => updateQuantity(item.product.id, 1)}
-                      className="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
-                    >
+                    <span className="min-w-[2.5rem] text-center text-sm font-semibold">
+                      {item.quantity} {SELL_UNIT}
+                    </span>
+                    <button type="button" onClick={() => updateQuantity(item.product.id, 1)} className="pos-qty-btn">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="font-bold text-blue-600">{formatCurrency(item.total_price)}</p>
+                  <p className="pos-total-value text-sm sm:text-base">{formatCurrency(item.total_price)}</p>
                 </div>
               </div>
             ))
           )}
         </div>
 
-        {/* Cart Footer */}
-        <div className="p-4 border-t border-gray-200 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">المجموع الفرعي</span>
+        <div className="p-3 sm:p-4 border-t space-y-2 shrink-0 safe-bottom" style={{ borderColor: 'var(--pos-border)' }}>
+          <div className="flex items-center justify-between text-sm">
+            <span style={{ color: 'var(--pos-muted)' }}>المجموع الفرعي</span>
             <span className="font-medium">{formatCurrency(subtotal)}</span>
           </div>
-
           <div className="flex items-center gap-2">
-            <span className="text-gray-600">الخصم</span>
+            <span className="text-sm shrink-0" style={{ color: 'var(--pos-muted)' }}>
+              الخصم
+            </span>
             <input
               type="number"
               value={discount}
               onChange={(e) => setDiscount(e.target.value)}
-              className="input-field w-32"
+              className="input-field flex-1 min-h-[44px]"
               min="0"
               dir="ltr"
             />
           </div>
-
-          <div className="flex items-center justify-between text-xl font-bold">
+          <div className="flex items-center justify-between text-lg font-bold pt-1">
             <span>الإجمالي</span>
-            <span className="text-blue-600">{formatCurrency(total)}</span>
+            <span className="pos-total-value">{formatCurrency(total)}</span>
           </div>
-
           <button
-            onClick={() => setShowPayment(true)}
-            disabled={cart.length === 0 || total === 0}
-            className="w-full btn-success py-3 flex items-center justify-center gap-2"
+            type="button"
+            onClick={openPayment}
+            disabled={cart.length === 0 || total <= 0}
+            className="pos-btn-checkout"
           >
             <CreditCard className="w-5 h-5" />
             إتمام البيع
           </button>
         </div>
       </div>
+
+      {cart.length > 0 && (
+        <div className="pos-mobile-bar lg:hidden">
+          <button
+            type="button"
+            className="pos-mobile-bar-cart"
+            onClick={() => setMobileCartOpen(true)}
+          >
+            <span className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" style={{ color: 'var(--pos-primary)' }} />
+              السلة ({cart.length})
+            </span>
+            <span className="pos-total-value text-sm">{formatCurrency(total)}</span>
+          </button>
+          <button
+            type="button"
+            className="pos-mobile-bar-pay"
+            onClick={openPayment}
+            disabled={total <= 0}
+          >
+            دفع
+          </button>
+        </div>
+      )}
 
       {/* Payment Modal */}
       {showPayment && (

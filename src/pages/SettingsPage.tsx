@@ -104,22 +104,21 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">الإعدادات</h1>
-          <p className="text-gray-500 mt-1">إعدادات الشركة والفواتير</p>
+    <div className="page-shell max-w-4xl mx-auto animate-fade-in">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">الإعدادات</h1>
+          <p className="page-subtitle">إعدادات الشركة والفواتير</p>
         </div>
         {saved && (
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle className="w-5 h-5" />
+          <div className="flex items-center gap-2 text-green-600 text-sm sm:text-base">
+            <CheckCircle className="w-5 h-5 shrink-0" />
             <span>تم الحفظ بنجاح</span>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
         {/* Company Info */}
         <div className="card p-6">
           <div className="flex items-center gap-3 mb-6">

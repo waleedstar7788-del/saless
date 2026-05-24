@@ -227,48 +227,46 @@ export default function DebtsPage() {
 
   return (
     <div className="page-shell animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">الديون والمدفوعات</h1>
-          <p className="text-gray-500 mt-1">{customers.length} عميل بديون</p>
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">الديون والمدفوعات</h1>
+          <p className="page-subtitle">{customers.length} عميل بديون</p>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card p-6 bg-red-50 border-red-200">
+      <div className="stat-grid-3">
+        <div className="summary-card-compact bg-red-50 border-red-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
               <CreditCard className="w-6 h-6 text-red-600" />
             </div>
             <div>
               <p className="text-sm text-red-600 font-medium">إجمالي الديون</p>
-              <p className="text-2xl font-bold text-red-700">{formatCurrency(totalDebts)}</p>
+              <p className="summary-value text-red-700">{formatCurrency(totalDebts)}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-6 bg-blue-50 border-blue-200">
+        <div className="summary-card-compact bg-blue-50 border-blue-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <User className="w-6 h-6 text-blue-600" />
             </div>
             <div>
               <p className="text-sm text-blue-600 font-medium">عملاء بديون</p>
-              <p className="text-2xl font-bold text-blue-700">{customers.length}</p>
+              <p className="summary-value text-blue-700">{customers.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-6 bg-green-50 border-green-200">
+        <div className="summary-card-compact bg-green-50 border-green-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <Download className="w-6 h-6 text-green-600" />
             </div>
             <div>
               <p className="text-sm text-green-600 font-medium">آخر المدفوعات</p>
-              <p className="text-2xl font-bold text-green-700">
+              <p className="summary-value text-green-700">
                 {payments.length > 0 ? formatCurrency(payments[0].amount) : '0 د.ع'}
               </p>
             </div>
@@ -301,9 +299,9 @@ export default function DebtsPage() {
               filteredCustomers.map((customer) => (
                 <div
                   key={customer.id}
-                  className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                  className="p-4 hover:bg-gray-50 transition-colors flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-red-600" />
                     </div>

@@ -196,16 +196,17 @@ export default function CustomersPage() {
 
   return (
     <div className="page-shell animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">العملاء</h1>
-          <p className="text-gray-500 mt-1">{customers.length} عميل</p>
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">العملاء</h1>
+          <p className="page-subtitle">{customers.length} عميل</p>
         </div>
-        <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          إضافة عميل
-        </button>
+        <div className="page-actions">
+          <button onClick={openAddModal} className="btn-primary flex items-center justify-center gap-2">
+            <Plus className="w-5 h-5 shrink-0" />
+            <span>إضافة عميل</span>
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -222,8 +223,62 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Customers Table */}
-      <div className="card overflow-hidden">
+      {/* Mobile cards */}
+      <div className="mobile-data-list">
+        {filteredCustomers.map((customer) => (
+          <div key={customer.id} className="mobile-data-card">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                <span className="text-blue-700 font-bold">{customer.name.charAt(0)}</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 truncate">{customer.name}</p>
+                <p className="text-xs text-gray-500">{customer.invoice_count} فاتورة</p>
+              </div>
+              {customer.debt_balance > 0 && (
+                <span className="text-red-600 font-bold text-sm shrink-0">
+                  {formatCurrency(customer.debt_balance)}
+                </span>
+              )}
+            </div>
+            <div className="mobile-data-card-row">
+              <span className="text-gray-500">هاتف</span>
+              <span dir="ltr" className="text-gray-800">{customer.phone || '—'}</span>
+            </div>
+            <div className="mobile-data-card-row">
+              <span className="text-gray-500">واتساب</span>
+              <span dir="ltr" className="text-green-700">{customer.whatsapp || '—'}</span>
+            </div>
+            <div className="mobile-data-card-row">
+              <span className="text-gray-500">مشتريات</span>
+              <span className="font-medium">{formatCurrency(customer.total_purchases || 0)}</span>
+            </div>
+            <div className="mobile-data-card-actions">
+              <WhatsAppButton
+                phone={getCustomerWhatsApp(customer)}
+                customerName={customer.name}
+                debtAmount={customer.debt_balance}
+                compact
+              />
+              <button onClick={() => setShowDetails(customer)} className="btn-secondary flex-1 min-h-[44px] text-sm">
+                تفاصيل
+              </button>
+              <button onClick={() => openEditModal(customer)} className="btn-secondary flex-1 min-h-[44px] text-sm">
+                تعديل
+              </button>
+            </div>
+          </div>
+        ))}
+        {filteredCustomers.length === 0 && (
+          <div className="card p-8 text-center text-gray-500">
+            <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            لا يوجد عملاء
+          </div>
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="card overflow-hidden desktop-data-table">
         <div className="table-scroll">
           <table className="w-full">
             <thead>

@@ -52,12 +52,12 @@ export default function PermissionsEditor({ value, onChange, disabled }: Props) 
             <span className="mr-2 text-green-600">— صلاحيات كاملة ✓</span>
           )}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             type="button"
             disabled={disabled}
             onClick={setFullAccess}
-            className="text-sm px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+            className="text-sm px-3 py-2.5 sm:py-1.5 flex-1 sm:flex-none min-h-[44px] sm:min-h-0 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
           >
             صلاحيات كاملة
           </button>
@@ -65,7 +65,7 @@ export default function PermissionsEditor({ value, onChange, disabled }: Props) 
             type="button"
             disabled={disabled}
             onClick={() => setAll(true)}
-            className="text-sm px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 disabled:opacity-50"
+            className="text-sm px-3 py-2.5 sm:py-1.5 flex-1 sm:flex-none min-h-[44px] sm:min-h-0 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 disabled:opacity-50"
           >
             تحديد الكل
           </button>
@@ -73,7 +73,7 @@ export default function PermissionsEditor({ value, onChange, disabled }: Props) 
             type="button"
             disabled={disabled}
             onClick={() => setAll(false)}
-            className="text-sm px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+            className="text-sm px-3 py-2.5 sm:py-1.5 flex-1 sm:flex-none min-h-[44px] sm:min-h-0 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
           >
             إلغاء الكل
           </button>

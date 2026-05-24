@@ -145,20 +145,20 @@ export default function CategoriesPage() {
 
   return (
     <div className="page-shell animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">الفئات</h1>
-          <p className="text-gray-500 mt-1">{categories.length} فئة</p>
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">الفئات</h1>
+          <p className="page-subtitle">{categories.length} فئة</p>
         </div>
-        <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          إضافة فئة
-        </button>
+        <div className="page-actions">
+          <button onClick={openAddModal} className="btn-primary flex items-center justify-center gap-2">
+            <Plus className="w-5 h-5 shrink-0" />
+            <span>إضافة فئة</span>
+          </button>
+        </div>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="category-grid">
         {categories.map((category) => (
           <div
             key={category.id}
@@ -179,7 +179,7 @@ export default function CategoriesPage() {
                 </p>
               </div>
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
               <button
                 onClick={() => openEditModal(category)}
                 className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"

@@ -308,11 +308,10 @@ export default function InvoicesPage() {
 
   return (
     <div className="page-shell animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">الفواتير</h1>
-          <p className="text-gray-500 mt-1">{invoices.length} فاتورة</p>
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">الفواتير</h1>
+          <p className="page-subtitle">{invoices.length} فاتورة</p>
         </div>
       </div>
 
@@ -342,8 +341,71 @@ export default function InvoicesPage() {
         </div>
       </div>
 
-      {/* Invoices Table */}
-      <div className="card overflow-hidden">
+      <div className="mobile-data-list">
+        {filteredInvoices.map((invoice) => (
+          <div key={invoice.id} className="mobile-data-card">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-bold text-blue-600">{invoice.invoice_number}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{formatDate(invoice.created_at)}</p>
+              </div>
+              <span
+                className={`badge shrink-0 ${
+                  invoice.status === 'completed'
+                    ? 'badge-success'
+                    : invoice.status === 'cancelled'
+                      ? 'badge-danger'
+                      : 'badge-warning'
+                }`}
+              >
+                {invoice.status === 'completed'
+                  ? 'مكتملة'
+                  : invoice.status === 'cancelled'
+                    ? 'ملغاة'
+                    : 'معلقة'}
+              </span>
+            </div>
+            <div className="mobile-data-card-row">
+              <span className="text-gray-500">العميل</span>
+              <span className="font-medium truncate">{invoice.customer?.name || 'عميل نقدي'}</span>
+            </div>
+            <div className="mobile-data-card-row">
+              <span className="text-gray-500">المجموع</span>
+              <span className="font-bold">{formatCurrency(invoice.total)}</span>
+            </div>
+            {invoice.remaining_amount > 0 && (
+              <div className="mobile-data-card-row">
+                <span className="text-gray-500">المتبقي</span>
+                <span className="text-red-600 font-medium">{formatCurrency(invoice.remaining_amount)}</span>
+              </div>
+            )}
+            <div className="mobile-data-card-actions">
+              <button
+                onClick={() => fetchInvoiceDetails(invoice)}
+                className="btn-secondary flex-1 min-h-[44px] text-sm"
+              >
+                تفاصيل
+              </button>
+              <button
+                onClick={() => {
+                  fetchInvoiceDetails(invoice).then(() => printInvoice(invoice, []));
+                }}
+                className="btn-secondary flex-1 min-h-[44px] text-sm"
+              >
+                طباعة
+              </button>
+            </div>
+          </div>
+        ))}
+        {filteredInvoices.length === 0 && (
+          <div className="card p-8 text-center text-gray-500">
+            <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            لا توجد فواتير
+          </div>
+        )}
+      </div>
+
+      <div className="card overflow-hidden desktop-data-table">
         <div className="table-scroll">
           <table className="w-full">
             <thead>

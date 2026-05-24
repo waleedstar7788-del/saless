@@ -328,22 +328,22 @@ export default function ReportsPage() {
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">التقارير</h1>
-          <p className="text-gray-500 mt-1">تحليل أداء المبيعات والمخزون</p>
+    <div className="page-shell animate-fade-in">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">التقارير</h1>
+          <p className="page-subtitle">تحليل أداء المبيعات والمخزون</p>
         </div>
-        <button onClick={exportReport} className="btn-primary flex items-center gap-2">
-          <Download className="w-5 h-5" />
-          تصدير التقرير
-        </button>
+        <div className="page-actions">
+          <button onClick={exportReport} className="btn-primary flex items-center justify-center gap-2">
+            <Download className="w-5 h-5 shrink-0" />
+            <span>تصدير التقرير</span>
+          </button>
+        </div>
       </div>
 
-      {/* Period Filter */}
       <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="filter-chip-row items-center">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-gray-400" />
             <span className="text-gray-600 font-medium">الفترة:</span>
@@ -365,20 +365,20 @@ export default function ReportsPage() {
             </button>
           ))}
           {period === 'custom' && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full sm:w-auto">
               <input
                 type="date"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="input-field w-40"
+                className="input-field w-full xs:w-36"
                 dir="ltr"
               />
-              <span className="text-gray-400">إلى</span>
+              <span className="text-gray-400 text-center">إلى</span>
               <input
                 type="date"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
-                className="input-field w-40"
+                className="input-field w-full xs:w-36"
                 dir="ltr"
               />
             </div>
@@ -386,49 +386,48 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="report-stat-grid">
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-2">
             <DollarSign className="w-5 h-5 text-blue-600" />
             <span className="text-sm text-gray-500">المبيعات</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{formatCurrency(stats.totalSales)}</p>
+          <p className="stat-value text-gray-900">{formatCurrency(stats.totalSales)}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
             <span className="text-sm text-gray-500">الربح</span>
           </div>
-          <p className="text-xl font-bold text-green-600">{formatCurrency(stats.totalProfit)}</p>
+          <p className="stat-value text-green-600">{formatCurrency(stats.totalProfit)}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="w-5 h-5 text-red-600" />
             <span className="text-sm text-gray-500">التكلفة</span>
           </div>
-          <p className="text-xl font-bold text-red-600">{formatCurrency(stats.totalCost)}</p>
+          <p className="stat-value text-red-600">{formatCurrency(stats.totalCost)}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-2">
             <FileText className="w-5 h-5 text-purple-600" />
             <span className="text-sm text-gray-500">الفواتير</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{stats.totalInvoices}</p>
+          <p className="stat-value text-gray-900">{stats.totalInvoices}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-2">
             <ShoppingCart className="w-5 h-5 text-amber-600" />
             <span className="text-sm text-gray-500">متوسط الفاتورة</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{formatCurrency(stats.averageInvoice)}</p>
+          <p className="stat-value text-gray-900">{formatCurrency(stats.averageInvoice)}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Package className="w-5 h-5 text-cyan-600" />
             <span className="text-sm text-gray-500">المنتجات المباعة</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{stats.totalProductsSold}</p>
+          <p className="stat-value text-gray-900">{stats.totalProductsSold}</p>
         </div>
       </div>
 

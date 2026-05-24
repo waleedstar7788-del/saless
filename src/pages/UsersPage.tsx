@@ -183,16 +183,18 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة المستخدمين والصلاحيات</h1>
-          <p className="text-gray-500 mt-1">{users.length} مستخدم — المدير يحدد صلاحيات كل موظف</p>
+    <div className="page-shell animate-fade-in">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">المستخدمين والصلاحيات</h1>
+          <p className="page-subtitle">{users.length} مستخدم — المدير يحدد صلاحيات كل موظف</p>
         </div>
         {pendingCount > 0 && (
-          <div className="flex items-center gap-2 bg-amber-100 px-4 py-2 rounded-lg">
-            <Users className="w-5 h-5 text-amber-600" />
-            <span className="text-amber-800 font-medium">{pendingCount} طلب معلق</span>
+          <div className="page-actions">
+            <div className="flex items-center justify-center gap-2 bg-amber-100 px-4 py-2.5 rounded-lg w-full sm:w-auto min-h-[44px]">
+              <Users className="w-5 h-5 text-amber-600 shrink-0" />
+              <span className="text-amber-800 font-medium text-sm sm:text-base">{pendingCount} طلب معلق</span>
+            </div>
           </div>
         )}
       </div>

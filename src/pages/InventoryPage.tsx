@@ -194,17 +194,19 @@ alert(JSON.stringify(error));
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة المخزون</h1>
-          <p className="text-gray-500 mt-1">{products.length} منتج</p>
+    <div className="page-shell animate-fade-in">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">إدارة المخزون</h1>
+          <p className="page-subtitle">{products.length} منتج</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowHistory(!showHistory)} className="btn-secondary flex items-center gap-2">
-            <History className="w-5 h-5" />
-            سجل الحركة
+        <div className="page-actions">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="btn-secondary flex items-center justify-center gap-2"
+          >
+            <History className="w-5 h-5 shrink-0" />
+            <span>سجل الحركة</span>
           </button>
         </div>
       </div>
@@ -256,9 +258,63 @@ alert(JSON.stringify(error));
         </div>
       </div>
 
-      {/* Products Table */}
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="mobile-data-list">
+        {filteredProducts.map((product) => (
+          <div key={product.id} className="mobile-data-card">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold text-gray-900 truncate">{product.name}</p>
+                <span className="badge badge-info mt-1">{product.category?.name || 'بدون فئة'}</span>
+              </div>
+              <span
+                className={`font-bold shrink-0 ${
+                  product.quantity <= product.low_stock_threshold ? 'text-red-600' : 'text-gray-900'
+                }`}
+              >
+                {formatStockDisplay(product)}
+              </span>
+            </div>
+            <div className="mobile-data-card-row">
+              <span className="text-gray-500">قيمة المخزون</span>
+              <span className="font-medium">{formatCurrency(getProductInventoryCost(product))}</span>
+            </div>
+            <div className="mobile-data-card-actions">
+              <button
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setMovementType('in');
+                  setShowModal(true);
+                }}
+                className="btn-success flex-1 min-h-[44px] text-sm"
+              >
+                إضافة
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setMovementType('out');
+                  setShowModal(true);
+                }}
+                className="btn-danger flex-1 min-h-[44px] text-sm"
+              >
+                صرف
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setShowModal(true);
+                }}
+                className="btn-secondary flex-1 min-h-[44px] text-sm"
+              >
+                تعديل
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card overflow-hidden desktop-data-table">
+        <div className="table-scroll">
           <table className="w-full">
             <thead>
               <tr className="table-header">

@@ -206,10 +206,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
-        <p className="text-gray-500">{format(new Date(), 'EEEE، d MMMM yyyy', { locale: ar })}</p>
+    <div className="page-shell animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">لوحة التحكم</h1>
+        <p className="page-subtitle text-left sm:text-right">{format(new Date(), 'EEEE، d MMMM yyyy', { locale: ar })}</p>
       </div>
 
       {/* Pending Users Alert */}
@@ -239,7 +239,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="stat-grid">
         <StatCard
           title="مبيعات اليوم"
           value={formatCurrency(stats.todaySales)}
@@ -480,7 +480,7 @@ function StatCard({
   };
 
   return (
-    <div className={`card p-5 ${warning ? 'bg-amber-50 border-amber-200' : ''}`}>
+    <div className={`card p-4 sm:p-5 min-w-0 ${warning ? 'bg-amber-50 border-amber-200' : ''}`}>
       <div className="flex items-start justify-between">
         <div className={`p-3 rounded-xl ${colorClasses[color as keyof typeof colorClasses]}`}>
           {icon}
@@ -493,7 +493,7 @@ function StatCard({
       </div>
       <div className="mt-4">
         <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+        <p className="text-fluid-xl font-bold text-gray-900 mt-1 break-words">{value}</p>
         {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
         {trend && <p className="text-xs text-gray-500 mt-1">{trend}</p>}
       </div>

@@ -268,18 +268,19 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">المنتجات</h1>
-          <p className="text-gray-500 mt-1">{products.length} منتج</p>
+    <div className="page-shell animate-fade-in">
+      <div className="page-header">
+        <div className="min-w-0">
+          <h1 className="page-title">المنتجات</h1>
+          <p className="page-subtitle">{products.length} منتج</p>
         </div>
         {can('products_create') && (
-          <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            إضافة منتج
-          </button>
+          <div className="page-actions">
+            <button onClick={openAddModal} className="btn-primary flex items-center justify-center gap-2">
+              <Plus className="w-5 h-5 shrink-0" />
+              <span>إضافة منتج</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -318,7 +319,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="product-grid">
         {filteredProducts.map((product) => (
           <div
             key={product.id}
@@ -334,7 +335,7 @@ export default function ProductsPage() {
             )}
 
             {(can('products_edit') || can('products_delete')) && (
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+              <div className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-1">
                 {can('products_edit') && (
                   <button
                     onClick={() => openEditModal(product)}
