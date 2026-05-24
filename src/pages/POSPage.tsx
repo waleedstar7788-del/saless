@@ -66,6 +66,7 @@ export default function POSPage() {
   const [isMobileLayout, setIsMobileLayout] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 1024
   );
+  const [settings, setSettings] = useState<any>(null);
 
   const printReceipt = (invoice: Invoice) => {
     const paymentTypeLabel = invoice.payment_type === 'cash' ? 'نقدي' : invoice.payment_type === 'debt' ? 'دين' : 'دفع جزئي';
@@ -89,12 +90,29 @@ export default function POSPage() {
       ? '<div class="total-row debt"><span>' + formatCurrency(invoice.remaining_amount) + '</span><span>المتبقي (دين):</span></div>'
       : '';
 
-    // Show customer's current debt balance if customer exists
-    const customerDebtHtml = invoice.customer
+    // Show customer's current debt balance if customer exists and payment is debt or partial
+    const customerDebtHtml = invoice.customer && (invoice.payment_type === 'debt' || invoice.payment_type === 'partial')
       ? '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;">' +
         '<div class="total-row" style="color: #dc2626; font-size: 12px;"><span>' + formatCurrency(invoice.customer.debt_balance) + '</span><span>الدين السابق:</span></div>' +
         '<div class="total-row" style="color: #1e40af; font-size: 12px; font-weight: bold;"><span>' + formatCurrency(invoice.customer.debt_balance + invoice.remaining_amount) + '</span><span>المجموع الكلي:</span></div>' +
         '</div>'
+      : '';
+
+    const companyName = settings?.company_name || 'نظام الفاتح للمبيعات';
+    const companyLogo = settings?.company_logo || '';
+    const companyAddress = settings?.company_address || '';
+    const companyPhone = settings?.company_phone || '';
+
+    const logoHtml = companyLogo
+      ? '<div style="text-align: center; margin-bottom: 10px;"><img src="' + companyLogo + '" alt="Logo" style="max-width: 80px; max-height: 80px;"></div>'
+      : '';
+
+    const addressPhoneHtml = (companyAddress || companyPhone)
+      ? '<p style="font-size: 10px; color: #666; margin-top: 5px;">' +
+        (companyAddress ? companyAddress : '') +
+        (companyAddress && companyPhone ? ' | ' : '') +
+        (companyPhone ? companyPhone : '') +
+        '</p>'
       : '';
 
     const html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
@@ -123,7 +141,11 @@ export default function POSPage() {
         '@media print { body { print-color-adjust: exact; } }' +
       '</style></head><body>' +
       '<div class="receipt">' +
-        '<div class="header"><h1>نظام الفاتح للمبيعات</h1><p>وصل بيع</p></div>' +
+        '<div class="header">' +
+          logoHtml +
+          '<h1>' + companyName + '</h1><p>وصل بيع</p>' +
+          addressPhoneHtml +
+        '</div>' +
         '<div class="info">' +
           '<div class="info-row"><span>' + invoice.invoice_number + '</span><span>رقم الفاتورة:</span></div>' +
           '<div class="info-row"><span>' + new Date(invoice.created_at).toLocaleDateString('ar-IQ') + '</span><span>التاريخ:</span></div>' +
@@ -140,7 +162,7 @@ export default function POSPage() {
           debtHtml +
           customerDebtHtml +
         '</div>' +
-        '<div class="footer"><p>شكراً لزيارتكم</p><p>نظام الفاتح للمبيعات</p></div>' +
+        '<div class="footer"><p>شكراً لزيارتكم</p><p>' + companyName + '</p></div>' +
       '</div></body></html>';
 
     printWindow.document.write(html);
@@ -153,9 +175,30 @@ export default function POSPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
 
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*');
+
+      if (error) throw error;
+
+      const settingsObj: any = {};
+      if (data) {
+        data.forEach((setting: any) => {
+          settingsObj[setting.key] = setting.value;
+        });
+      }
+      setSettings(settingsObj);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCustomers();
+    fetchSettings();
 
     const mq = window.matchMedia('(min-width: 1024px)');
     const updateLayout = () => setIsMobileLayout(!mq.matches);
