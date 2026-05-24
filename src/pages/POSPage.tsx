@@ -91,7 +91,10 @@ export default function POSPage() {
 
     // Show customer's current debt balance if customer exists
     const customerDebtHtml = invoice.customer
-      ? '<div class="total-row" style="color: #dc2626; font-size: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;"><span>' + formatCurrency(invoice.customer.debt_balance) + '</span><span>الدين السابق للعميل:</span></div>'
+      ? '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;">' +
+        '<div class="total-row" style="color: #dc2626; font-size: 12px;"><span>' + formatCurrency(invoice.customer.debt_balance) + '</span><span>الدين السابق:</span></div>' +
+        '<div class="total-row" style="color: #1e40af; font-size: 12px; font-weight: bold;"><span>' + formatCurrency(invoice.customer.debt_balance + invoice.remaining_amount) + '</span><span>المجموع الكلي:</span></div>' +
+        '</div>'
       : '';
 
     const html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
