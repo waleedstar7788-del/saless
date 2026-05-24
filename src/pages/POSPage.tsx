@@ -885,7 +885,27 @@ export default function POSPage() {
                 </div>
               </div>
 
-              {(paymentType === 'partial' || paymentType === 'debt') && selectedCustomer && (
+              {paymentType === 'debt' && selectedCustomer && (
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <p className="text-sm font-medium text-gray-900 mb-2">تفاصيل الدين</p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">الدين القديم:</span>
+                      <span className="font-medium text-red-600">{formatCurrency(selectedCustomer.debt_balance)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">المبلغ الحالي:</span>
+                      <span className="font-medium">{formatCurrency(total)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-red-200 pt-1 mt-1">
+                      <span className="text-gray-700 font-medium">مجموع الدين الجديد:</span>
+                      <span className="font-bold text-red-700">{formatCurrency(selectedCustomer.debt_balance + total)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paymentType === 'partial' && selectedCustomer && (
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-600">العميل: {selectedCustomer.name}</p>
                   <p className="text-sm text-gray-600">

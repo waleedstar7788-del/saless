@@ -787,7 +787,8 @@ export default function InvoicesPage() {
                           </td>
                           <td className="px-4 py-3 text-center">
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="numeric"
                               value={item.quantity}
                               onChange={(e) => {
                                 const newQty = parseInt(e.target.value) || 0;
@@ -795,12 +796,13 @@ export default function InvoicesPage() {
                                 updateEditingItem(index, 'total_price', newQty * item.unit_price);
                               }}
                               className="input-field w-20 text-center"
-                              min="1"
+                              dir="ltr"
                             />
                           </td>
                           <td className="px-4 py-3 text-left">
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="numeric"
                               value={item.unit_price}
                               onChange={(e) => {
                                 const newPrice = parseInt(e.target.value) || 0;
@@ -808,7 +810,6 @@ export default function InvoicesPage() {
                                 updateEditingItem(index, 'total_price', item.quantity * newPrice);
                               }}
                               className="input-field w-24 text-left"
-                              min="0"
                               dir="ltr"
                             />
                           </td>
