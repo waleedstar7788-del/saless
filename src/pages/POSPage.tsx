@@ -195,6 +195,57 @@ export default function POSPage() {
     }
   };
 
+  const sendToN8n = async (invoice: Invoice, customer: Customer | null) => {
+    try {
+      const n8nWebhookUrl = settings?.n8n_webhook_url;
+      if (!n8nWebhookUrl) {
+        console.log('n8n webhook URL not configured');
+        return;
+      }
+
+      const payload = {
+        invoice: {
+          id: invoice.id,
+          invoice_number: invoice.invoice_number,
+          total: invoice.total,
+          paid_amount: invoice.paid_amount,
+          remaining_amount: invoice.remaining_amount,
+          payment_type: invoice.payment_type,
+          created_at: invoice.created_at,
+        },
+        customer: customer ? {
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+          whatsapp: customer.whatsapp,
+          debt_balance: customer.debt_balance,
+        } : null,
+        items: cart.map(item => ({
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
+        })),
+      };
+
+      const response = await fetch(n8nWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to send to n8n:', response.statusText);
+      } else {
+        console.log('Successfully sent to n8n');
+      }
+    } catch (error) {
+      console.error('Error sending to n8n:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCustomers();
@@ -543,6 +594,9 @@ export default function POSPage() {
           },
         ]);
       }
+
+      // Send to n8n for WhatsApp automation
+      await sendToN8n(invoice, selectedCustomer);
 
       setLastInvoice(invoice);
       setShowSuccess(true);

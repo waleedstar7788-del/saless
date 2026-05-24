@@ -235,6 +235,7 @@ export type AppSettings = {
   app_theme: string;
   primary_color: string;
   thermal_printer_width: string;
+  n8n_webhook_url: string;
 };
 
 export const formatCurrency = (amount: number): string => {

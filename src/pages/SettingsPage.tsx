@@ -34,6 +34,7 @@ export default function SettingsPage() {
     app_theme: 'light',
     primary_color: '#2563eb',
     thermal_printer_width: '80',
+    n8n_webhook_url: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -69,6 +70,7 @@ export default function SettingsPage() {
           app_theme: loadedTheme,
           primary_color: settingsMap.primary_color || getThemePrimaryColor(loadedTheme),
           thermal_printer_width: settingsMap.thermal_printer_width || '80',
+          n8n_webhook_url: settingsMap.n8n_webhook_url || '',
         });
         setTheme(loadedTheme);
       }
@@ -273,6 +275,23 @@ export default function SettingsPage() {
                 <option value="80">80 مم</option>
                 <option value="110">110 مم</option>
               </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                رابط n8n Webhook (لإرسال الوصل عبر واتساب)
+              </label>
+              <input
+                type="url"
+                value={settings.n8n_webhook_url}
+                onChange={(e) => setSettings({ ...settings, n8n_webhook_url: e.target.value })}
+                className="input-field"
+                placeholder="https://n8n.yourdomain.com/webhook/..."
+                dir="ltr"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                سيتم إرسال بيانات الفاتورة إلى هذا الرابط لإرسال الوصل عبر واتساب تلقائياً
+              </p>
             </div>
           </div>
         </div>
