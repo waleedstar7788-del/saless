@@ -10,6 +10,12 @@ import {
   X,
   Calendar,
   Filter,
+  Edit,
+  Save,
+  Trash2,
+  Plus,
+  Minus,
+  Loader2,
 } from 'lucide-react';
 
 export default function InvoicesPage() {
@@ -19,6 +25,9 @@ export default function InvoicesPage() {
   const [dateFilter, setDateFilter] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [editingItems, setEditingItems] = useState<InvoiceItem[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchInvoices();
@@ -52,6 +61,93 @@ export default function InvoicesPage() {
       setSelectedInvoice(invoice);
     } catch (error) {
       console.error('Error fetching invoice details:', error);
+    }
+  };
+
+  const startEditingInvoice = async (invoice: Invoice) => {
+    try {
+      const { data, error } = await supabase
+        .from('invoice_items')
+        .select('*')
+        .eq('invoice_id', invoice.id);
+
+      if (error) throw error;
+      setEditingItems(data || []);
+      setEditingInvoice(invoice);
+    } catch (error) {
+      console.error('Error fetching invoice details for editing:', error);
+    }
+  };
+
+  const updateEditingItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
+    const updatedItems = [...editingItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    setEditingItems(updatedItems);
+  };
+
+  const removeEditingItem = (index: number) => {
+    const updatedItems = editingItems.filter((_, i) => i !== index);
+    setEditingItems(updatedItems);
+  };
+
+  const saveInvoiceEdit = async () => {
+    if (!editingInvoice) return;
+
+    setSaving(true);
+    try {
+      // Calculate new totals
+      const newSubtotal = editingItems.reduce((sum, item) => sum + item.total_price, 0);
+      const newTotal = newSubtotal - editingInvoice.discount;
+      const newPaidAmount = editingInvoice.paid_amount;
+      const newRemainingAmount = newTotal - newPaidAmount;
+
+      // Update invoice
+      const { error: invoiceError } = await supabase
+        .from('invoices')
+        .update({
+          subtotal: newSubtotal,
+          total: newTotal,
+          remaining_amount: newRemainingAmount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingInvoice.id);
+
+      if (invoiceError) throw invoiceError;
+
+      // Delete old items
+      const { error: deleteError } = await supabase
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', editingInvoice.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new items
+      const { error: insertError } = await supabase
+        .from('invoice_items')
+        .insert(
+          editingItems.map(item => ({
+            invoice_id: editingInvoice.id,
+            product_id: item.product_id,
+            product_name: item.product_name,
+            barcode: item.barcode,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.total_price,
+          }))
+        );
+
+      if (insertError) throw insertError;
+
+      setEditingInvoice(null);
+      setEditingItems([]);
+      fetchInvoices();
+      alert('تم تحديث الفاتورة بنجاح');
+    } catch (error) {
+      console.error('Error saving invoice edit:', error);
+      alert('حدث خطأ أثناء تحديث الفاتورة');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -403,7 +499,7 @@ export default function InvoicesPage() {
               </button>
               <button
                 onClick={() => {
-                  fetchInvoiceDetails(invoice).then(() => printInvoice(invoice, []));
+                  fetchInvoiceDetails(invoice).then(() => printInvoice(invoice, invoiceItems));
                 }}
                 className="btn-secondary flex-1 min-h-[44px] text-sm"
               >
@@ -470,9 +566,16 @@ export default function InvoicesPage() {
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => startEditingInvoice(invoice)}
+                        className="p-2 hover:bg-yellow-100 rounded-lg text-yellow-600"
+                        title="تعديل"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => {
                           fetchInvoiceDetails(invoice).then(() => {
-                            printInvoice(invoice, []);
+                            printInvoice(invoice, invoiceItems);
                           });
                         }}
                         className="p-2 hover:bg-blue-100 rounded-lg text-blue-600"
@@ -483,7 +586,7 @@ export default function InvoicesPage() {
                       <button
                         onClick={() => {
                           fetchInvoiceDetails(invoice).then(() => {
-                            downloadPDF(invoice, []);
+                            downloadPDF(invoice, invoiceItems);
                           });
                         }}
                         className="p-2 hover:bg-green-100 rounded-lg text-green-600"
@@ -615,6 +718,159 @@ export default function InvoicesPage() {
                 >
                   <Download className="w-5 h-5" />
                   طباعة A4
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Invoice Modal */}
+      {editingInvoice && (
+        <div className="modal-overlay" onClick={() => setEditingInvoice(null)}>
+          <div className="modal-content max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-xl font-bold text-gray-900">تعديل الفاتورة {editingInvoice.invoice_number}</h2>
+              <button
+                onClick={() => setEditingInvoice(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Invoice Info */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-500 mb-1">رقم الفاتورة</p>
+                  <p className="font-bold text-blue-600">{editingInvoice.invoice_number}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-500 mb-1">التاريخ</p>
+                  <p className="font-medium">{formatDate(editingInvoice.created_at)}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-500 mb-1">العميل</p>
+                  <p className="font-medium">{editingInvoice.customer?.name || 'عميل نقدي'}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-500 mb-1">الخصم</p>
+                  <p className="font-medium">{formatCurrency(editingInvoice.discount)}</p>
+                </div>
+              </div>
+
+              {/* Edit Items Table */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">تعديل المنتجات</h3>
+                <div className="table-scroll">
+                  <table className="w-full border border-gray-200 rounded-lg">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-4 py-2 text-right text-sm font-medium text-gray-600">المنتج</th>
+                        <th className="px-4 py-2 text-center text-sm font-medium text-gray-600">الكمية</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">السعر</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">الإجمالي</th>
+                        <th className="px-4 py-2 text-center text-sm font-medium text-gray-600">إجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editingItems.map((item, index) => (
+                        <tr key={item.id || index} className="border-t border-gray-100">
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={item.product_name}
+                              onChange={(e) => updateEditingItem(index, 'product_name', e.target.value)}
+                              className="input-field w-full"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const newQty = parseInt(e.target.value) || 0;
+                                updateEditingItem(index, 'quantity', newQty);
+                                updateEditingItem(index, 'total_price', newQty * item.unit_price);
+                              }}
+                              className="input-field w-20 text-center"
+                              min="1"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-left">
+                            <input
+                              type="number"
+                              value={item.unit_price}
+                              onChange={(e) => {
+                                const newPrice = parseInt(e.target.value) || 0;
+                                updateEditingItem(index, 'unit_price', newPrice);
+                                updateEditingItem(index, 'total_price', item.quantity * newPrice);
+                              }}
+                              className="input-field w-24 text-left"
+                              min="0"
+                              dir="ltr"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-left font-medium">
+                            {formatCurrency(item.total_price)}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => removeEditingItem(index)}
+                              className="p-2 hover:bg-red-100 rounded-lg text-red-600"
+                              title="حذف"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">المجموع الفرعي</span>
+                  <span className="font-medium">{formatCurrency(editingItems.reduce((sum, item) => sum + item.total_price, 0))}</span>
+                </div>
+                <div className="flex justify-between text-green-600">
+                  <span>الخصم</span>
+                  <span>- {formatCurrency(editingInvoice.discount)}</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold border-t border-gray-200 pt-2">
+                  <span>الإجمالي الجديد</span>
+                  <span className="text-blue-600">{formatCurrency(editingItems.reduce((sum, item) => sum + item.total_price, 0) - editingInvoice.discount)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={saveInvoiceEdit}
+                  disabled={saving || editingItems.length === 0}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      جاري الحفظ...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      حفظ التعديلات
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setEditingInvoice(null)}
+                  className="btn-secondary"
+                >
+                  إلغاء
                 </button>
               </div>
             </div>
