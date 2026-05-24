@@ -198,6 +198,8 @@ export default function POSPage() {
   const sendToN8n = async (invoice: Invoice, customer: Customer | null) => {
     try {
       const n8nWebhookUrl = settings?.n8n_webhook_url;
+      console.log('n8n webhook URL:', n8nWebhookUrl);
+
       if (!n8nWebhookUrl) {
         console.log('n8n webhook URL not configured');
         return;
@@ -228,6 +230,8 @@ export default function POSPage() {
         })),
       };
 
+      console.log('Sending to n8n:', payload);
+
       const response = await fetch(n8nWebhookUrl, {
         method: 'POST',
         headers: {
@@ -236,10 +240,16 @@ export default function POSPage() {
         body: JSON.stringify(payload),
       });
 
+      console.log('n8n response status:', response.status);
+
       if (!response.ok) {
         console.error('Failed to send to n8n:', response.statusText);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
       } else {
         console.log('Successfully sent to n8n');
+        const responseData = await response.text();
+        console.log('Response data:', responseData);
       }
     } catch (error) {
       console.error('Error sending to n8n:', error);
