@@ -89,6 +89,11 @@ export default function POSPage() {
       ? '<div class="total-row debt"><span>' + formatCurrency(invoice.remaining_amount) + '</span><span>المتبقي (دين):</span></div>'
       : '';
 
+    // Show customer's current debt balance if exists
+    const customerDebtHtml = selectedCustomer && selectedCustomer.debt_balance > 0
+      ? '<div class="total-row" style="color: #dc2626; font-size: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;"><span>' + formatCurrency(selectedCustomer.debt_balance) + '</span><span>الدين السابق للعميل:</span></div>'
+      : '';
+
     const html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
       '<title>وصل - ' + invoice.invoice_number + '</title>' +
       '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">' +
@@ -130,6 +135,7 @@ export default function POSPage() {
           '<div class="total-row bold"><span>' + formatCurrency(invoice.total) + '</span><span>الإجمالي:</span></div>' +
           '<div class="total-row paid"><span>' + formatCurrency(invoice.paid_amount) + '</span><span>المدفوع:</span></div>' +
           debtHtml +
+          customerDebtHtml +
         '</div>' +
         '<div class="footer"><p>شكراً لزيارتكم</p><p>نظام الفاتح للمبيعات</p></div>' +
       '</div></body></html>';
@@ -489,6 +495,7 @@ export default function POSPage() {
       setShowSuccess(true);
       setMobileCartOpen(false);
       clearCart();
+      fetchProducts();
     } catch (error) {
       console.error('Error processing sale:', error);
       alert('حدث خطأ أثناء معالجة البيع');
@@ -906,11 +913,26 @@ export default function POSPage() {
               )}
 
               {paymentType === 'partial' && selectedCustomer && (
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-600">العميل: {selectedCustomer.name}</p>
-                  <p className="text-sm text-gray-600">
-                    الدين الحالي: {formatCurrency(selectedCustomer.debt_balance)}
-                  </p>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <p className="text-sm font-medium text-gray-900 mb-2">تفاصيل الدفع الجزئي</p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">الدين القديم:</span>
+                      <span className="font-medium text-red-600">{formatCurrency(selectedCustomer.debt_balance)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">المبلغ الحالي:</span>
+                      <span className="font-medium">{formatCurrency(total)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">المبلغ المدفوع:</span>
+                      <span className="font-medium text-green-600">{formatCurrency(parseInt(paidAmount) || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-orange-200 pt-1 mt-1">
+                      <span className="text-gray-700 font-medium">المبلغ المتبقي:</span>
+                      <span className="font-bold text-orange-700">{formatCurrency(selectedCustomer.debt_balance + remainingAmount)}</span>
+                    </div>
+                  </div>
                 </div>
               )}
 
