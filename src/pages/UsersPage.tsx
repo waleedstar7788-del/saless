@@ -183,7 +183,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">إدارة المستخدمين والصلاحيات</h1>

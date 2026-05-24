@@ -268,7 +268,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -316,7 +316,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="product-grid lg:grid-cols-3 xl:grid-cols-4">
         {filteredProducts.map((product) => (
           <div
             key={product.id}
@@ -407,7 +407,7 @@ export default function ProductsPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content-lg" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingProduct ? 'تعديل المنتج' : 'إضافة منتج جديد'}

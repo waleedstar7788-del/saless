@@ -307,7 +307,7 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -344,7 +344,7 @@ export default function InvoicesPage() {
 
       {/* Invoices Table */}
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table className="w-full">
             <thead>
               <tr className="table-header">
@@ -471,7 +471,7 @@ export default function InvoicesPage() {
               {/* Items Table */}
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">المنتجات</h3>
-                <div className="overflow-x-auto">
+                <div className="table-scroll">
                   <table className="w-full border border-gray-200 rounded-lg">
                     <thead>
                       <tr className="bg-gray-50">

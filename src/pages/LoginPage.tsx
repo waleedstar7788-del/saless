@@ -53,17 +53,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4 sm:p-6 safe-bottom">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4">
-            <Store className="w-10 h-10 text-blue-600" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full shadow-lg mb-3 sm:mb-4">
+            <Store className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">نظام الفاتح للمبيعات</h1>
-          <p className="text-blue-200">إدارة المبيعات والمخزون بسهولة</p>
+          <h1 className="text-fluid-2xl font-bold text-white mb-2">نظام الفاتح للمبيعات</h1>
+          <p className="text-blue-200 text-sm sm:text-base">إدارة المبيعات والمخزون بسهولة</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8">
           <div className="flex mb-6">
             <button
               onClick={() => setIsLogin(true)}

@@ -143,8 +143,8 @@ export default function InventoryPage() {
       fetchProducts();
       fetchMovements();
     } catch (error) {
-      console.error('Error updating inventory:', error);
-      alert('حدث خطأ أثناء التحديث');
+      console.error("Error updating user status:", error);
+alert(JSON.stringify(error));
     } finally {
       setSaving(false);
     }
@@ -194,7 +194,7 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -258,7 +258,7 @@ export default function InventoryPage() {
 
       {/* Products Table */}
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table className="w-full">
             <thead>
               <tr className="table-header">

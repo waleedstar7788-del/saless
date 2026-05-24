@@ -82,8 +82,8 @@ function PendingApprovalPage() {
   const canSelfPromote = hasManager === false && profile?.status !== 'rejected';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4 sm:p-6">
+      <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center mx-2">
         <div
           className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
             profile?.status === 'rejected' ? 'bg-red-100' : 'bg-amber-100'
@@ -99,7 +99,7 @@ function PendingApprovalPage() {
             </svg>
           )}
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{statusText}</h2>
+        <h2 className="text-fluid-xl font-bold text-gray-900 mb-2">{statusText}</h2>
         <p className="text-gray-600 mb-2">{statusDesc}</p>
         <p className="text-sm text-gray-400 mb-6">الحساب: {profile?.email}</p>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, formatCurrency, formatDate, type Customer } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import WhatsAppButton from '../components/WhatsAppButton';
 import {
   Search,
   Plus,
@@ -174,7 +175,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -203,7 +204,7 @@ export default function CustomersPage() {
 
       {/* Customers Table */}
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table className="w-full">
             <thead>
               <tr className="table-header">
@@ -253,7 +254,13 @@ export default function CustomersPage() {
                     )}
                   </td>
                   <td className="table-cell">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1 sm:gap-2 flex-wrap">
+                      <WhatsAppButton
+                        phone={customer.phone}
+                        customerName={customer.name}
+                        debtAmount={customer.debt_balance}
+                        compact
+                      />
                       <button
                         onClick={() => setShowDetails(customer)}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600"
@@ -474,7 +481,13 @@ export default function CustomersPage() {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                <WhatsAppButton
+                  phone={showDetails.phone}
+                  customerName={showDetails.name}
+                  debtAmount={showDetails.debt_balance}
+                  className="w-full sm:w-auto flex-1"
+                />
                 <button
                   onClick={() => {
                     setShowDetails(null);
@@ -486,7 +499,7 @@ export default function CustomersPage() {
                 </button>
                 <button
                   onClick={() => setShowDetails(null)}
-                  className="btn-secondary"
+                  className="btn-secondary flex-1 sm:flex-none"
                 >
                   إغلاق
                 </button>

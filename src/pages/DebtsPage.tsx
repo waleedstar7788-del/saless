@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, formatCurrency, formatDate, type Customer, type Payment, type Invoice } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import WhatsAppButton from '../components/WhatsAppButton';
 import {
   Search,
   CreditCard,
-  Plus,
   X,
   Banknote,
   CheckCircle,
-  AlertCircle,
   Download,
   User,
   DollarSign,
@@ -218,7 +217,7 @@ export default function DebtsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -304,16 +303,21 @@ export default function DebtsPage() {
                       <p className="text-sm text-gray-500">{customer.phone || 'بدون رقم'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-left">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+                    <div className="text-left w-full sm:w-auto mb-1 sm:mb-0">
                       <p className="font-bold text-red-600">{formatCurrency(customer.debt_balance)}</p>
                     </div>
+                    <WhatsAppButton
+                      phone={customer.phone}
+                      customerName={customer.name}
+                      debtAmount={customer.debt_balance}
+                    />
                     <button
                       onClick={() => {
                         setSelectedCustomer(customer);
                         setShowPaymentModal(true);
                       }}
-                      className="btn-success py-2 px-3 flex items-center gap-1"
+                      className="btn-success py-2 px-3 flex items-center gap-1 min-h-[40px]"
                     >
                       <DollarSign className="w-4 h-4" />
                       قبض
@@ -378,9 +382,16 @@ export default function DebtsPage() {
 
             <div className="p-6">
               <div className="bg-red-50 p-4 rounded-lg mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <User className="w-5 h-5 text-red-600" />
-                  <p className="font-medium">{selectedCustomer.name}</p>
+                <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-red-600" />
+                    <p className="font-medium">{selectedCustomer.name}</p>
+                  </div>
+                  <WhatsAppButton
+                    phone={selectedCustomer.phone}
+                    customerName={selectedCustomer.name}
+                    debtAmount={selectedCustomer.debt_balance}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">الدين المستحق:</span>

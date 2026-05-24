@@ -22,10 +22,33 @@
 
 html {
   direction: rtl;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-gray-50 text-gray-900 text-fluid-base;
+  padding-top: env(safe-area-inset-top, 0px);
+  overflow-x: hidden;
+}
+
+/* ——— Touch-friendly controls ——— */
+@media (max-width: 1023px) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-success,
+  .btn-danger,
+  .btn-warning,
+  .sidebar-link,
+  .mobile-nav-item {
+    min-height: 44px;
+  }
+
+  .input-field,
+  select.input-field {
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
 }
 
 .font-cairo {
@@ -33,27 +56,38 @@ body {
 }
 
 .btn-primary {
-  @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg font-medium transition-all duration-200;
+  @apply hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply min-h-[40px] sm:min-h-[42px] text-sm sm:text-base;
 }
 
 .btn-secondary {
-  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-gray-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-gray-200 text-gray-800 px-3 py-2 sm:px-4 rounded-lg font-medium transition-all duration-200;
+  @apply hover:bg-gray-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply min-h-[40px] sm:min-h-[42px] text-sm sm:text-base;
 }
 
 .btn-success {
-  @apply bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-green-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-green-600 text-white px-3 py-2 sm:px-4 rounded-lg font-medium transition-all duration-200;
+  @apply hover:bg-green-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply min-h-[40px] sm:min-h-[42px] text-sm sm:text-base;
 }
 
 .btn-danger {
-  @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-red-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-red-600 text-white px-3 py-2 sm:px-4 rounded-lg font-medium transition-all duration-200;
+  @apply hover:bg-red-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply min-h-[40px] sm:min-h-[42px] text-sm sm:text-base;
 }
 
 .btn-warning {
-  @apply bg-amber-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-amber-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-amber-500 text-white px-3 py-2 sm:px-4 rounded-lg font-medium transition-all duration-200;
+  @apply hover:bg-amber-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply min-h-[40px] sm:min-h-[42px] text-sm sm:text-base;
 }
 
 .input-field {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-right;
+  @apply w-full px-3 py-2 sm:px-4 border border-gray-300 rounded-lg text-fluid-base text-right;
+  @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200;
 }
 
 .card {
@@ -77,19 +111,123 @@ body {
 }
 
 .modal-overlay {
-  @apply fixed inset-0 bg-black/50 z-50 flex items-center justify-center;
+  @apply fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .modal-content {
-  @apply bg-white rounded-xl shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto;
+  @apply bg-white shadow-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto;
+  @apply rounded-t-2xl sm:rounded-xl max-w-md sm:mx-4;
+  @apply max-sm:max-w-none;
+}
+
+.modal-content-lg {
+  @apply modal-content max-w-2xl;
+}
+
+.modal-content-xl {
+  @apply modal-content max-w-4xl;
+}
+
+.table-scroll {
+  @apply overflow-x-auto -mx-3 sm:mx-0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll table {
+  @apply min-w-[640px] sm:min-w-0 w-full;
 }
 
 .table-header {
-  @apply bg-gray-50 text-gray-600 font-medium text-sm;
+  @apply bg-gray-50 text-gray-600 font-medium text-xs sm:text-sm whitespace-nowrap;
 }
 
 .table-cell {
-  @apply px-4 py-3 border-b border-gray-100;
+  @apply px-2 py-2.5 sm:px-4 sm:py-3 border-b border-gray-100 text-sm;
+}
+
+/* ——— Page layout ——— */
+.page-shell {
+  @apply w-full max-w-app mx-auto space-y-4 sm:space-y-5 md:space-y-6;
+}
+
+.page-header {
+  @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.page-title {
+  @apply text-fluid-2xl font-bold text-gray-900 leading-tight;
+}
+
+.page-subtitle {
+  @apply text-fluid-sm text-gray-500 mt-0.5 sm:mt-1;
+}
+
+.page-actions {
+  @apply flex flex-wrap gap-2 w-full sm:w-auto;
+}
+
+.page-actions > * {
+  @apply flex-1 sm:flex-none min-w-0;
+}
+
+/* ——— Stats / summary cards ——— */
+.stat-grid {
+  @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4;
+}
+
+.product-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4;
+}
+
+/* ——— Mobile bottom navigation ——— */
+.mobile-bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200;
+  @apply flex items-stretch justify-around px-1 pt-1;
+  padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-nav-item {
+  @apply flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-1;
+  @apply text-[10px] xs:text-xs text-gray-600 transition-colors;
+  min-height: 52px;
+  min-width: 0;
+}
+
+.mobile-nav-item.active {
+  @apply text-blue-600 font-semibold;
+}
+
+.mobile-nav-item.active svg {
+  @apply text-blue-600;
+}
+
+/* ——— Sidebar (tablet+) ——— */
+@media (min-width: 1024px) {
+  .app-sidebar {
+    width: 16rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-sidebar {
+    width: 14rem;
+  }
+
+  .app-sidebar .sidebar-brand-title {
+    font-size: 0.875rem;
+  }
+}
+
+.main-with-bottom-nav {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  .main-with-bottom-nav {
+    padding-bottom: 0;
+  }
 }
 
 .badge {
