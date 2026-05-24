@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, type AppSettings } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import {
+  APP_THEMES,
+  getThemePrimaryColor,
+  isAppThemeId,
+  type AppThemeId,
+} from '../lib/appThemes';
 import BackupSection from '../components/BackupSection';
 import {
   Settings,
@@ -16,6 +23,7 @@ import {
 
 export default function SettingsPage() {
   const { can } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [settings, setSettings] = useState<AppSettings>({
     company_name: '',
     company_logo: '',
@@ -23,7 +31,8 @@ export default function SettingsPage() {
     company_phone: '',
     invoice_prefix: 'INV',
     currency_name: 'دينار عراقي',
-    primary_color: '#1e40af',
+    app_theme: 'blue',
+    primary_color: '#2563eb',
     thermal_printer_width: '80',
   });
   const [loading, setLoading] = useState(true);
@@ -48,6 +57,10 @@ export default function SettingsPage() {
           settingsMap[item.key] = item.value;
         });
 
+        const loadedTheme = isAppThemeId(settingsMap.app_theme)
+          ? settingsMap.app_theme
+          : 'blue';
+
         setSettings({
           company_name: settingsMap.company_name || '',
           company_logo: settingsMap.company_logo || '',
@@ -55,9 +68,11 @@ export default function SettingsPage() {
           company_phone: settingsMap.company_phone || '',
           invoice_prefix: settingsMap.invoice_prefix || 'INV',
           currency_name: settingsMap.currency_name || 'دينار عراقي',
-          primary_color: settingsMap.primary_color || '#1e40af',
+          app_theme: loadedTheme,
+          primary_color: settingsMap.primary_color || getThemePrimaryColor(loadedTheme),
           thermal_printer_width: settingsMap.thermal_printer_width || '80',
         });
+        setTheme(loadedTheme);
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -85,6 +100,9 @@ export default function SettingsPage() {
         if (error) throw error;
       }
 
+      if (isAppThemeId(settings.app_theme)) {
+        setTheme(settings.app_theme);
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -263,68 +281,58 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Theme Settings */}
+        {/* Theme Settings — site-wide */}
         <div className="card p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
               <Palette className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">إعدادات المظهر</h2>
-              <p className="text-sm text-gray-500">تخصيص ألوان النظام</p>
+              <h2 className="font-semibold text-gray-900">ثيم النظام</h2>
+              <p className="text-sm text-gray-500">يطبّق على كل الصفحات بما فيها نقطة البيع</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: 'أزرق داكن', value: '#1e40af' },
-              { name: 'أزرق', value: '#3b82f6' },
-              { name: 'أخضر', value: '#059669' },
-              { name: 'أحمر', value: '#dc2626' },
-              { name: 'رمادي', value: '#374151' },
-              { name: 'برتقالي', value: '#ea580c' },
-              { name: 'وردي', value: '#db2777' },
-              { name: 'بني', value: '#92400e' },
-            ].map((color) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {APP_THEMES.map((t) => (
               <button
-                key={color.value}
+                key={t.id}
                 type="button"
-                onClick={() => setSettings({ ...settings, primary_color: color.value })}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  settings.primary_color === color.value
-                    ? 'border-gray-900 ring-2 ring-offset-2 ring-gray-400'
+                onClick={() => {
+                  setSettings({
+                    ...settings,
+                    app_theme: t.id,
+                    primary_color: t.primaryColor,
+                  });
+                  setTheme(t.id);
+                }}
+                className={`p-4 rounded-xl border-2 text-right transition-all min-h-[44px] ${
+                  (settings.app_theme || theme) === t.id
+                    ? 'border-gray-900 ring-2 ring-offset-2'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
+                style={
+                  (settings.app_theme || theme) === t.id
+                    ? { borderColor: 'var(--app-primary)', boxShadow: '0 0 0 2px var(--app-primary-soft)' }
+                    : undefined
+                }
               >
-                <div
-                  className="w-full h-8 rounded-lg mb-2"
-                  style={{ backgroundColor: color.value }}
-                />
-                <p className="text-sm font-medium text-gray-700">{color.name}</p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full shrink-0 border-2 border-white shadow"
+                    style={{ backgroundColor: t.swatch }}
+                  />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900">{t.label}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{t.description}</p>
+                  </div>
+                </div>
               </button>
             ))}
           </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              لون مخصص
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="color"
-                value={settings.primary_color}
-                onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
-                className="w-16 h-12 border-2 border-gray-200 rounded-lg cursor-pointer"
-              />
-              <input
-                type="text"
-                value={settings.primary_color}
-                onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
-                className="input-field w-40"
-                dir="ltr"
-              />
-            </div>
-          </div>
+          <p className="text-xs text-gray-500 mt-4">
+            الثيم الحالي: <strong>{APP_THEMES.find((t) => t.id === theme)?.label}</strong> — اضغط «حفظ الإعدادات» لحفظه لجميع الأجهزة.
+          </p>
         </div>
 
         {/* Save Button */}

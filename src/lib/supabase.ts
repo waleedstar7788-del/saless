@@ -232,6 +232,7 @@ export type AppSettings = {
   company_phone: string;
   invoice_prefix: string;
   currency_name: string;
+  app_theme: string;
   primary_color: string;
   thermal_printer_width: string;
 };

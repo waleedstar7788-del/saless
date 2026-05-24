@@ -10,12 +10,6 @@ import {
 } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  POS_THEMES,
-  loadPosTheme,
-  savePosTheme,
-  type PosThemeId,
-} from '../lib/posThemes';
-import {
   Search,
   Barcode,
   ShoppingCart,
@@ -66,14 +60,8 @@ export default function POSPage() {
   const [saving, setSaving] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<Invoice | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [posTheme, setPosTheme] = useState<PosThemeId>(loadPosTheme);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
-
-  const handleThemeChange = (id: PosThemeId) => {
-    setPosTheme(id);
-    savePosTheme(id);
-  };
 
   const printReceipt = (invoice: Invoice) => {
     const paymentTypeLabel = invoice.payment_type === 'cash' ? 'نقدي' : invoice.payment_type === 'debt' ? 'دين' : 'دفع جزئي';
@@ -290,9 +278,6 @@ export default function POSPage() {
     setShowSearch(false);
     setSearchTerm('');
     setSearchResults([]);
-    if (window.innerWidth < 1024) {
-      setMobileCartOpen(true);
-    }
     barcodeInputRef.current?.focus();
   };
 
@@ -503,7 +488,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className="pos-page animate-fade-in" data-pos-theme={posTheme}>
+    <div className="pos-page animate-fade-in">
       {mobileCartOpen && (
         <button
           type="button"
@@ -514,23 +499,6 @@ export default function POSPage() {
       )}
 
       <div className={`pos-products-panel ${cart.length > 0 ? 'has-cart-bar' : ''}`}>
-        <div className="pos-toolbar mb-2 shrink-0">
-          <span className="pos-toolbar-title">نقطة البيع</span>
-          <div className="pos-theme-picker" role="group" aria-label="اختيار الثيم">
-            {POS_THEMES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                title={t.label}
-                aria-label={t.label}
-                aria-pressed={posTheme === t.id}
-                onClick={() => handleThemeChange(t.id)}
-                className={`pos-theme-btn ${posTheme === t.id ? 'active' : ''}`}
-                style={{ backgroundColor: t.swatch }}
-              />
-            ))}
-          </div>
-        </div>
         <div className="pos-search-bar mb-2 shrink-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="relative">
@@ -792,7 +760,7 @@ export default function POSPage() {
             className="pos-btn-checkout"
           >
             <CreditCard className="w-5 h-5" />
-            إتمام البيع
+            إتمام الدفع
           </button>
         </div>
       </div>
@@ -801,22 +769,14 @@ export default function POSPage() {
         <div className="pos-mobile-bar lg:hidden">
           <button
             type="button"
-            className="pos-mobile-bar-cart"
+            className="pos-mobile-bar-cart w-full"
             onClick={() => setMobileCartOpen(true)}
           >
             <span className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" style={{ color: 'var(--pos-primary)' }} />
-              السلة ({cart.length})
+              <ShoppingCart className="w-5 h-5 shrink-0" style={{ color: 'var(--pos-primary)' }} />
+              <span>السلة ({cart.length}) — اضغط لمراجعة الطلب</span>
             </span>
-            <span className="pos-total-value text-sm">{formatCurrency(total)}</span>
-          </button>
-          <button
-            type="button"
-            className="pos-mobile-bar-pay"
-            onClick={openPayment}
-            disabled={total <= 0}
-          >
-            دفع
+            <span className="pos-total-value text-sm shrink-0">{formatCurrency(total)}</span>
           </button>
         </div>
       )}
