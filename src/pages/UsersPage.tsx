@@ -40,7 +40,7 @@ export default function UsersPage() {
   const { isManager, can, user: currentUser } = useAuth();
 
   useEffect(() => {
-    if (can('users')) {
+    if (can('users_view')) {
       fetchUsers();
     } else {
       setLoading(false);
@@ -165,7 +165,7 @@ export default function UsersPage() {
 
   const pendingCount = users.filter((u) => u.status === 'pending').length;
 
-  if (!can('users')) {
+  if (!can('users_view')) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <Shield className="w-16 h-16 text-gray-300" />
@@ -183,7 +183,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="page-shell animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">إدارة المستخدمين والصلاحيات</h1>
@@ -259,7 +259,7 @@ export default function UsersPage() {
 
               <div className="flex flex-wrap items-center gap-3">
                 {getStatusBadge(user.status)}
-                {isManager ? (
+                {isManager && can('users_roles') ? (
                   <select
                     value={user.role}
                     onChange={(e) =>
@@ -277,7 +277,7 @@ export default function UsersPage() {
                   </span>
                 )}
 
-                {user.role === 'employee' && user.status === 'approved' && isManager && (
+                {user.role === 'employee' && user.status === 'approved' && isManager && can('users_permissions') && (
                   <button
                     type="button"
                     onClick={() =>
@@ -301,7 +301,7 @@ export default function UsersPage() {
                   <span className="text-xs text-blue-600 font-medium">كل الصلاحيات</span>
                 )}
 
-                {user.id !== currentUser?.id && user.status === 'pending' && isManager && (
+                {user.id !== currentUser?.id && user.status === 'pending' && isManager && can('users_approve') && (
                   <>
                     <button
                       onClick={() => updateStatus(user.id, 'approved')}

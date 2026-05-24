@@ -104,7 +104,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="page-shell max-w-4xl mx-auto animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -350,7 +350,7 @@ export default function SettingsPage() {
         </div>
       </form>
 
-      {can('backup') && <BackupSection />}
+      {can('backup_manage') && <BackupSection />}
     </div>
   );
 }

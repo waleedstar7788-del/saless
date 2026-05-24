@@ -1,4 +1,46 @@
-import { buildWhatsAppDebtUrl } from '../lib/whatsapp';
+import { formatCurrency } from '../lib/supabase';
+
+type Props = {
+  phone: string | null | undefined;
+  customerName: string;
+  debtAmount?: number;
+  compact?: boolean;
+  className?: string;
+  label?: string;
+};
+
+/** Normalize Iraqi/local numbers for wa.me (E.164 without +) */
+export function formatPhoneForWhatsApp(phone: string): string | null {
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) return null;
+
+  if (digits.startsWith('964') && digits.length >= 12) {
+    return digits;
+  }
+  if (digits.startsWith('0') && digits.length >= 10) {
+    return `964${digits.slice(1)}`;
+  }
+  if (digits.length === 10 && digits.startsWith('7')) {
+    return `964${digits}`;
+  }
+  if (digits.length >= 9 && digits.length <= 15) {
+    return digits.startsWith('964') ? digits : `964${digits}`;
+  }
+  return null;
+}
+
+function buildDebtMessage(customerName: string, debtAmount?: number): string {
+  const name = customerName.trim() || 'عميلنا الكريم';
+  if (debtAmount && debtAmount > 0) {
+    return (
+      `السلام عليكم ${name}،\n` +
+      `نذكّركم بوجود مبلغ مستحق: ${formatCurrency(debtAmount)}.\n` +
+      `نرجو التكرم بالتسديد أو التواصل معنا.\n` +
+      `شكراً لتعاونكم.`
+    );
+  }
+  return `السلام عليكم ${name}، نرجو التواصل معنا. شكراً لتعاونكم.`;
+}
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -8,51 +50,60 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-type Props = {
-  phone: string | null | undefined;
-  customerName: string;
-  debtAmount: number;
-  /** compact = icon only on small screens */
-  compact?: boolean;
-  className?: string;
-};
-
 export default function WhatsAppButton({
   phone,
   customerName,
-  debtAmount,
+  debtAmount = 0,
   compact = false,
   className = '',
+  label,
 }: Props) {
-  const url = buildWhatsAppDebtUrl(phone, customerName, debtAmount);
+  const normalized = phone ? formatPhoneForWhatsApp(phone) : null;
+  const hasPhone = Boolean(normalized);
 
-  if (!url) {
+  const handleClick = () => {
+    if (!normalized) {
+      alert('لا يوجد رقم هاتف صالح لهذا العميل');
+      return;
+    }
+
+    const text = encodeURIComponent(buildDebtMessage(customerName, debtAmount));
+    const url = `https://wa.me/${normalized}?text=${text}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  if (compact) {
     return (
       <button
         type="button"
-        disabled
-        title="رقم هاتف غير صالح"
-        className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed opacity-60 ${className}`}
+        onClick={handleClick}
+        disabled={!hasPhone}
+        title={hasPhone ? 'إرسال واتساب' : 'لا يوجد رقم هاتف'}
+        className={`p-2 rounded-lg transition-colors ${
+          hasPhone
+            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        } ${className}`}
       >
         <WhatsAppIcon className="w-4 h-4" />
-        {!compact && <span className="text-sm hidden sm:inline">واتساب</span>}
       </button>
     );
   }
-
-  const handleClick = () => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      title="إرسال تذكير بالدين عبر واتساب"
-      className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white transition-colors shadow-sm touch-manipulation min-h-[40px] ${className}`}
+      disabled={!hasPhone}
+      title={hasPhone ? 'فتح واتساب' : 'أضف رقم هاتف للعميل أولاً'}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors min-h-[40px] ${
+        hasPhone
+          ? 'bg-green-600 text-white hover:bg-green-700'
+          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+      } ${className}`}
     >
-      <WhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-      {!compact && <span className="text-sm font-medium hidden xs:inline">واتساب</span>}
+      <WhatsAppIcon className="w-5 h-5 shrink-0" />
+      <span>{label ?? 'واتساب'}</span>
     </button>
   );
 }

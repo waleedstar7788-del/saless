@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, formatCurrency, formatDate, type Customer, type Payment, type Invoice } from '../lib/supabase';
+import {
+  supabase,
+  formatCurrency,
+  formatDate,
+  getCustomerWhatsApp,
+  type Customer,
+  type Payment,
+  type Invoice,
+} from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import WhatsAppButton from '../components/WhatsAppButton';
 import {
@@ -203,7 +211,8 @@ export default function DebtsPage() {
 
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone?.includes(searchTerm)
+    customer.phone?.includes(searchTerm) ||
+    customer.whatsapp?.includes(searchTerm)
   );
 
   const totalDebts = customers.reduce((sum, c) => sum + c.debt_balance, 0);
@@ -300,7 +309,9 @@ export default function DebtsPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{customer.name}</p>
-                      <p className="text-sm text-gray-500">{customer.phone || 'بدون رقم'}</p>
+                      <p className="text-sm text-gray-500" dir="ltr">
+                        {getCustomerWhatsApp(customer) || 'بدون واتساب'}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
@@ -308,7 +319,7 @@ export default function DebtsPage() {
                       <p className="font-bold text-red-600">{formatCurrency(customer.debt_balance)}</p>
                     </div>
                     <WhatsAppButton
-                      phone={customer.phone}
+                      phone={getCustomerWhatsApp(customer)}
                       customerName={customer.name}
                       debtAmount={customer.debt_balance}
                     />
@@ -388,7 +399,7 @@ export default function DebtsPage() {
                     <p className="font-medium">{selectedCustomer.name}</p>
                   </div>
                   <WhatsAppButton
-                    phone={selectedCustomer.phone}
+                    phone={getCustomerWhatsApp(selectedCustomer)}
                     customerName={selectedCustomer.name}
                     debtAmount={selectedCustomer.debt_balance}
                   />

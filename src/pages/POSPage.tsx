@@ -474,10 +474,10 @@ export default function POSPage() {
   };
 
   return (
-    <div className="page-shell animate-fade-in flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 min-h-[min(70vh,calc(100dvh-11rem))] lg:min-h-[calc(100dvh-8rem)]">
+    <div className="h-[calc(100vh-8rem)] flex gap-6 animate-fade-in">
       {/* Products Section */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0 order-2 lg:order-1">
-        <div className="card p-3 sm:p-4 mb-3 sm:mb-4 shrink-0">
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="card p-4 mb-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Barcode Scanner */}
             <div className="relative">
@@ -531,8 +531,8 @@ export default function POSPage() {
         </div>
 
         {/* Quick Products Grid */}
-        <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
-          <div className="product-grid">
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {products.map((product) => (
               <button
                 key={product.id}
@@ -556,9 +556,9 @@ export default function POSPage() {
       </div>
 
       {/* Cart Section */}
-      <div className="w-full lg:w-96 xl:w-[26rem] flex flex-col card shrink-0 order-1 lg:order-2 max-h-[42vh] sm:max-h-[48vh] lg:max-h-none min-h-[200px] lg:min-h-0">
+      <div className="w-96 flex flex-col card">
         {/* Cart Header */}
-        <div className="p-3 sm:p-4 border-b border-gray-200 shrink-0">
+        <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-lg">السلة</h2>
             <span className="badge badge-info">{cart.length} منتج</span>

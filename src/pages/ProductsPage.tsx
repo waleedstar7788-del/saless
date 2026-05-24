@@ -41,7 +41,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -268,17 +268,19 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="page-shell animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">المنتجات</h1>
           <p className="text-gray-500 mt-1">{products.length} منتج</p>
         </div>
-        <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          إضافة منتج
-        </button>
+        {can('products_create') && (
+          <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            إضافة منتج
+          </button>
+        )}
       </div>
 
       <InventorySummaryCards
@@ -316,7 +318,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="product-grid lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredProducts.map((product) => (
           <div
             key={product.id}
@@ -331,21 +333,26 @@ export default function ProductsPage() {
               </div>
             )}
 
-            {/* Actions */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-              <button
-                onClick={() => openEditModal(product)}
-                className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setDeleteId(product.id)}
-                className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            {(can('products_edit') || can('products_delete')) && (
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                {can('products_edit') && (
+                  <button
+                    onClick={() => openEditModal(product)}
+                    className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                )}
+                {can('products_delete') && (
+                  <button
+                    onClick={() => setDeleteId(product.id)}
+                    className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Product image or placeholder */}
             <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
@@ -407,7 +414,7 @@ export default function ProductsPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingProduct ? 'تعديل المنتج' : 'إضافة منتج جديد'}

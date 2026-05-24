@@ -183,7 +183,7 @@ export default function DashboardPage() {
       setCategoryData(catData);
 
       // Fetch pending users count (for managers)
-      if (can('users')) {
+      if (can('users_view')) {
         const { count: pendingCount } = await supabase
           .from('profiles')
           .select('id', { count: 'exact', head: true })
@@ -206,14 +206,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="page-shell animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
         <p className="text-gray-500">{format(new Date(), 'EEEE، d MMMM yyyy', { locale: ar })}</p>
       </div>
 
       {/* Pending Users Alert */}
-      {can('users') && pendingUsersCount > 0 && (
+      {can('users_view') && pendingUsersCount > 0 && (
         <Link
           to="/users"
           className="block card border-amber-200 bg-amber-50 p-4 hover:bg-amber-100 transition-colors"

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, formatCurrency, formatDate, type Customer } from '../lib/supabase';
+import {
+  supabase,
+  formatCurrency,
+  formatDate,
+  getCustomerWhatsApp,
+  getSupabaseErrorMessage,
+  isMissingColumnError,
+  type Customer,
+} from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import WhatsAppButton from '../components/WhatsAppButton';
 import {
@@ -37,6 +45,7 @@ export default function CustomersPage() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    whatsapp: '',
     address: '',
     notes: '',
     debt_balance: '0',
@@ -80,6 +89,7 @@ export default function CustomersPage() {
     setFormData({
       name: '',
       phone: '',
+      whatsapp: '',
       address: '',
       notes: '',
       debt_balance: '0',
@@ -97,6 +107,7 @@ export default function CustomersPage() {
     setFormData({
       name: customer.name,
       phone: customer.phone || '',
+      whatsapp: customer.whatsapp || '',
       address: customer.address,
       notes: customer.notes,
       debt_balance: customer.debt_balance.toString(),
@@ -109,7 +120,7 @@ export default function CustomersPage() {
     setSaving(true);
 
     try {
-      const data = {
+      const baseData = {
         name: formData.name,
         phone: formData.phone || null,
         address: formData.address,
@@ -118,19 +129,27 @@ export default function CustomersPage() {
         updated_at: new Date().toISOString(),
       };
 
-      let error;
-      if (editingCustomer) {
-        ({ error } = await supabase
-          .from('customers')
-          .update(data)
-          .eq('id', editingCustomer.id));
-      } else {
-        ({ error } = await supabase
-          .from('customers')
-          .insert([{ ...data, created_by: user?.id }]));
+      const dataWithWhatsapp = {
+        ...baseData,
+        whatsapp: formData.whatsapp.trim() || null,
+      };
+
+      const saveCustomer = async (payload: typeof dataWithWhatsapp | typeof baseData) => {
+        if (editingCustomer) {
+          return supabase.from('customers').update(payload).eq('id', editingCustomer.id);
+        }
+        return supabase.from('customers').insert([{ ...payload, created_by: user?.id }]);
+      };
+
+      let result = await saveCustomer(dataWithWhatsapp);
+      if (result.error && isMissingColumnError(getSupabaseErrorMessage(result.error))) {
+        result = await saveCustomer(baseData);
+        if (!result.error) {
+          alert('تم الحفظ. نفّذ في Supabase: ALTER TABLE customers ADD COLUMN IF NOT EXISTS whatsapp text;');
+        }
       }
 
-      if (error) throw error;
+      if (result.error) throw result.error;
 
       setShowModal(false);
       resetForm();
@@ -163,7 +182,8 @@ export default function CustomersPage() {
 
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone?.includes(searchTerm)
+    customer.phone?.includes(searchTerm) ||
+    customer.whatsapp?.includes(searchTerm)
   );
 
   if (loading) {
@@ -210,6 +230,7 @@ export default function CustomersPage() {
               <tr className="table-header">
                 <th className="table-cell text-right">الاسم</th>
                 <th className="table-cell text-right">الهاتف</th>
+                <th className="table-cell text-right">واتساب</th>
                 <th className="table-cell text-right">العنوان</th>
                 <th className="table-cell text-right">المشتريات</th>
                 <th className="table-cell text-right">الديون</th>
@@ -242,6 +263,15 @@ export default function CustomersPage() {
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
+                  <td className="table-cell">
+                    {customer.whatsapp ? (
+                      <span className="text-green-700 font-medium" dir="ltr">
+                        {customer.whatsapp}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
                   <td className="table-cell text-gray-600">{customer.address || '-'}</td>
                   <td className="table-cell font-medium">{formatCurrency(customer.total_purchases || 0)}</td>
                   <td className="table-cell">
@@ -256,7 +286,7 @@ export default function CustomersPage() {
                   <td className="table-cell">
                     <div className="flex items-center justify-center gap-1 sm:gap-2 flex-wrap">
                       <WhatsAppButton
-                        phone={customer.phone}
+                        phone={getCustomerWhatsApp(customer)}
                         customerName={customer.name}
                         debtAmount={customer.debt_balance}
                         compact
@@ -329,20 +359,54 @@ export default function CustomersPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  رقم الهاتف
-                </label>
-                <div className="relative">
-                  <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="input-field pr-11"
-                    placeholder="07701234567"
-                    dir="ltr"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    رقم الهاتف
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="input-field pr-11"
+                      placeholder="07701234567"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    رقم الواتساب
+                  </label>
+                  <div className="relative">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 text-sm font-bold">
+                      WA
+                    </span>
+                    <input
+                      type="tel"
+                      value={formData.whatsapp}
+                      onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                      className="input-field pr-11"
+                      placeholder="07701234567"
+                      dir="ltr"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    للتواصل عبر واتساب — يمكن أن يختلف عن الهاتف
+                  </p>
+                  {formData.phone && !formData.whatsapp && (
+                    <button
+                      type="button"
+                      className="text-xs text-blue-600 mt-1 hover:underline"
+                      onClick={() =>
+                        setFormData({ ...formData, whatsapp: formData.phone })
+                      }
+                    >
+                      نسخ رقم الهاتف إلى واتساب
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -448,7 +512,10 @@ export default function CustomersPage() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{showDetails.name}</h3>
                   {showDetails.phone && (
-                    <p className="text-gray-500" dir="ltr">{showDetails.phone}</p>
+                    <p className="text-gray-500" dir="ltr">هاتف: {showDetails.phone}</p>
+                  )}
+                  {showDetails.whatsapp && (
+                    <p className="text-green-700" dir="ltr">واتساب: {showDetails.whatsapp}</p>
                   )}
                 </div>
               </div>
@@ -483,7 +550,7 @@ export default function CustomersPage() {
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                 <WhatsAppButton
-                  phone={showDetails.phone}
+                  phone={getCustomerWhatsApp(showDetails)}
                   customerName={showDetails.name}
                   debtAmount={showDetails.debt_balance}
                   className="w-full sm:w-auto flex-1"

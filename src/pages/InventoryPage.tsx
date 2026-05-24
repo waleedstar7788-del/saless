@@ -194,7 +194,7 @@ alert(JSON.stringify(error));
   }
 
   return (
-    <div className="page-shell animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -258,7 +258,7 @@ alert(JSON.stringify(error));
 
       {/* Products Table */}
       <div className="card overflow-hidden">
-        <div className="table-scroll">
+        <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="table-header">

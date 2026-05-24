@@ -146,6 +146,7 @@ export type Customer = {
   id: string;
   name: string;
   phone: string | null;
+  whatsapp: string | null;
   address: string;
   debt_balance: number;
   notes: string;
@@ -242,6 +243,17 @@ export const formatCurrency = (amount: number): string => {
 export const formatQuantityWithUnit = (quantity: number, unit: string = SELL_UNIT): string => {
   return `${quantity} ${unit}`;
 };
+
+/** Prefer dedicated WhatsApp number, fall back to phone */
+export function getCustomerWhatsApp(customer: {
+  whatsapp?: string | null;
+  phone?: string | null;
+}): string | null {
+  const wa = customer.whatsapp?.trim();
+  if (wa) return wa;
+  const phone = customer.phone?.trim();
+  return phone || null;
+}
 
 export function getSupabaseErrorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {

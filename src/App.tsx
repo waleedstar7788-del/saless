@@ -82,8 +82,8 @@ function PendingApprovalPage() {
   const canSelfPromote = hasManager === false && profile?.status !== 'rejected';
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4 sm:p-6">
-      <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center mx-2">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
         <div
           className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
             profile?.status === 'rejected' ? 'bg-red-100' : 'bg-amber-100'
@@ -99,7 +99,7 @@ function PendingApprovalPage() {
             </svg>
           )}
         </div>
-        <h2 className="text-fluid-xl font-bold text-gray-900 mb-2">{statusText}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{statusText}</h2>
         <p className="text-gray-600 mb-2">{statusDesc}</p>
         <p className="text-sm text-gray-400 mb-6">الحساب: {profile?.email}</p>
 
@@ -187,16 +187,16 @@ function AppRoutes() {
         }
       >
         <Route index element={<PermissionRoute permission="dashboard"><DashboardPage /></PermissionRoute>} />
-        <Route path="products" element={<PermissionRoute permission="products"><ProductsPage /></PermissionRoute>} />
-        <Route path="categories" element={<PermissionRoute permission="categories"><CategoriesPage /></PermissionRoute>} />
-        <Route path="customers" element={<PermissionRoute permission="customers"><CustomersPage /></PermissionRoute>} />
-        <Route path="pos" element={<PermissionRoute permission="pos"><POSPage /></PermissionRoute>} />
-        <Route path="invoices" element={<PermissionRoute permission="invoices"><InvoicesPage /></PermissionRoute>} />
-        <Route path="inventory" element={<PermissionRoute permission="inventory"><InventoryPage /></PermissionRoute>} />
-        <Route path="debts" element={<PermissionRoute permission="debts"><DebtsPage /></PermissionRoute>} />
-        <Route path="reports" element={<PermissionRoute permission="reports"><ReportsPage /></PermissionRoute>} />
-        <Route path="settings" element={<PermissionRoute permission="settings"><SettingsPage /></PermissionRoute>} />
-        <Route path="users" element={<PermissionRoute permission="users"><UsersPage /></PermissionRoute>} />
+        <Route path="products" element={<PermissionRoute permission="products_view"><ProductsPage /></PermissionRoute>} />
+        <Route path="categories" element={<PermissionRoute permission="categories_view"><CategoriesPage /></PermissionRoute>} />
+        <Route path="customers" element={<PermissionRoute permission="customers_view"><CustomersPage /></PermissionRoute>} />
+        <Route path="pos" element={<PermissionRoute permission="pos_use"><POSPage /></PermissionRoute>} />
+        <Route path="invoices" element={<PermissionRoute permission="invoices_view"><InvoicesPage /></PermissionRoute>} />
+        <Route path="inventory" element={<PermissionRoute permission="inventory_view"><InventoryPage /></PermissionRoute>} />
+        <Route path="debts" element={<PermissionRoute permission="debts_view"><DebtsPage /></PermissionRoute>} />
+        <Route path="reports" element={<PermissionRoute permission="reports_view"><ReportsPage /></PermissionRoute>} />
+        <Route path="settings" element={<PermissionRoute permission="settings_view"><SettingsPage /></PermissionRoute>} />
+        <Route path="users" element={<PermissionRoute permission="users_view"><UsersPage /></PermissionRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
