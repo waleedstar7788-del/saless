@@ -144,6 +144,9 @@ export default function DebtsPage() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    const previousBalance = customer.debt_balance;
+    const currentBalance = customer.debt_balance - amount;
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl" lang="ar">
@@ -161,6 +164,12 @@ export default function DebtsPage() {
           .content { font-size: 12px; }
           .row { display: flex; justify-content: space-between; margin: 8px 0; }
           .amount { font-size: 18px; font-weight: bold; color: #1e40af; margin: 15px 0; }
+          .balance-section { background: #f0f9ff; padding: 10px; border-radius: 5px; margin: 10px 0; }
+          .balance-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 11px; }
+          .balance-label { color: #666; }
+          .balance-value { font-weight: 600; }
+          .previous-balance { color: #dc2626; }
+          .current-balance { color: #059669; }
           .footer { border-top: 2px dashed #000; padding-top: 10px; margin-top: 10px; font-size: 10px; }
         </style>
       </head>
@@ -184,9 +193,19 @@ export default function DebtsPage() {
               <span>التاريخ:</span>
               <span>${formatDate(new Date().toISOString())}</span>
             </div>
-            <div class="row">
-              <span>المتبقي:</span>
-              <span>${formatCurrency(customer.debt_balance - amount)}</span>
+            <div class="balance-section">
+              <div class="balance-row">
+                <span class="balance-label">الدين السابق:</span>
+                <span class="balance-value previous-balance">${formatCurrency(previousBalance)}</span>
+              </div>
+              <div class="balance-row">
+                <span class="balance-label">المبلغ المدفوع:</span>
+                <span class="balance-value">${formatCurrency(amount)}</span>
+              </div>
+              <div class="balance-row" style="border-top: 1px dashed #ccc; padding-top: 5px; margin-top: 5px;">
+                <span class="balance-label">الدين الحالي:</span>
+                <span class="balance-value current-balance">${formatCurrency(currentBalance)}</span>
+              </div>
             </div>
           </div>
           <div class="footer">

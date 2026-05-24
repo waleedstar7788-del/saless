@@ -138,16 +138,31 @@ export default function InvoicesPage() {
               <span>الإجمالي:</span>
               <span>${formatCurrency(invoice.total)}</span>
             </div>
-            <div class="total-row">
-              <span>المدفوع:</span>
-              <span>${formatCurrency(invoice.paid_amount)}</span>
-            </div>
-            ${invoice.remaining_amount > 0 ? `
+            ${invoice.payment_type === 'partial' ? `
+              <div class="total-row" style="color: #dc2626;">
+                <span>المبلغ السابق:</span>
+                <span>${formatCurrency(invoice.total)}</span>
+              </div>
               <div class="total-row">
-                <span>المتبقي:</span>
+                <span>المدفوع:</span>
+                <span>${formatCurrency(invoice.paid_amount)}</span>
+              </div>
+              <div class="total-row" style="color: #059669;">
+                <span>المبلغ الحالي:</span>
                 <span>${formatCurrency(invoice.remaining_amount)}</span>
               </div>
-            ` : ''}
+            ` : `
+              <div class="total-row">
+                <span>المدفوع:</span>
+                <span>${formatCurrency(invoice.paid_amount)}</span>
+              </div>
+              ${invoice.remaining_amount > 0 ? `
+                <div class="total-row">
+                  <span>المتبقي:</span>
+                  <span>${formatCurrency(invoice.remaining_amount)}</span>
+                </div>
+              ` : ''}
+            `}
           </div>
 
           <div class="footer">
