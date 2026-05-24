@@ -2,8 +2,8 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { supabase } from '../lib/supabase';
 import {
   applyAppTheme,
-  isAppThemeId,
   loadAppTheme,
+  normalizeAppThemeId,
   type AppThemeId,
 } from '../lib/appThemes';
 
@@ -17,9 +17,10 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<AppThemeId>(() => loadAppTheme());
 
-  const setTheme = useCallback((id: AppThemeId) => {
-    setThemeState(id);
-    applyAppTheme(id);
+  const setTheme = useCallback((id: AppThemeId | string) => {
+    const normalized = normalizeAppThemeId(id);
+    setThemeState(normalized);
+    applyAppTheme(normalized);
   }, []);
 
   useEffect(() => {
@@ -35,9 +36,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           .eq('key', 'app_theme')
           .maybeSingle();
 
-        if (!error && data?.value && isAppThemeId(data.value)) {
-          setThemeState(data.value);
-          applyAppTheme(data.value);
+        if (!error && data?.value) {
+          const id = normalizeAppThemeId(data.value);
+          setThemeState(id);
+          applyAppTheme(id);
         }
       } catch {
         /* ignore */

@@ -96,10 +96,10 @@ export default function MainLayout() {
   const isPosRoute = location.pathname === '/pos';
 
   return (
-    <div className="min-h-[100dvh] bg-gray-50 flex overflow-x-hidden">
+    <div className="min-h-[100dvh] flex overflow-x-hidden" style={{ background: 'var(--app-bg)' }}>
       {/* Sidebar — desktop & drawer on mobile */}
       <aside
-        className={`app-sidebar fixed inset-y-0 right-0 z-50 bg-white border-l border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`app-sidebar fixed inset-y-0 right-0 z-50 border-l border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
           sidebarOpen ? 'translate-x-0' : 'translate-x-full'
         } w-[min(88vw,18rem)] sm:w-64`}
       >
@@ -190,9 +190,7 @@ export default function MainLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 w-full">
         <header
-          className={`sticky top-0 z-30 bg-white border-b border-gray-200 safe-top ${
-            isPosRoute ? 'lg:border-gray-200' : ''
-          }`}
+          className="app-header sticky top-0 z-30 border-b border-gray-200 safe-top"
         >
           <div
             className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 min-h-[3.5rem] ${

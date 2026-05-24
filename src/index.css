@@ -3,20 +3,22 @@
 @tailwind utilities;
 
 :root,
-html[data-app-theme='blue'] {
+html[data-app-theme='light'] {
+  color-scheme: light;
   --app-primary: #2563eb;
   --app-primary-hover: #1d4ed8;
   --app-primary-soft: #eff6ff;
   --app-primary-text: #1d4ed8;
   --app-accent: #059669;
   --app-accent-hover: #047857;
-  --app-bg: #f9fafb;
+  --app-bg: #f3f4f6;
   --app-surface: #ffffff;
-  --app-surface-alt: #f3f4f6;
+  --app-surface-alt: #f9fafb;
   --app-text: #111827;
   --app-muted: #6b7280;
   --app-border: #e5e7eb;
   --app-danger: #dc2626;
+  --app-header: #ffffff;
 
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
@@ -32,51 +34,21 @@ html[data-app-theme='blue'] {
 }
 
 html[data-app-theme='dark'] {
+  color-scheme: dark;
   --app-primary: #60a5fa;
   --app-primary-hover: #93c5fd;
   --app-primary-soft: #1e3a5f;
   --app-primary-text: #93c5fd;
   --app-accent: #34d399;
   --app-accent-hover: #6ee7b7;
-  --app-bg: #111827;
-  --app-surface: #1f2937;
-  --app-surface-alt: #374151;
-  --app-text: #f9fafb;
-  --app-muted: #9ca3af;
-  --app-border: #4b5563;
+  --app-bg: #0f172a;
+  --app-surface: #1e293b;
+  --app-surface-alt: #334155;
+  --app-text: #f1f5f9;
+  --app-muted: #94a3b8;
+  --app-border: #475569;
   --app-danger: #f87171;
-}
-
-html[data-app-theme='emerald'] {
-  --app-primary: #059669;
-  --app-primary-hover: #047857;
-  --app-primary-soft: #d1fae5;
-  --app-primary-text: #047857;
-  --app-accent: #0d9488;
-  --app-accent-hover: #0f766e;
-  --app-bg: #ecfdf5;
-  --app-surface: #ffffff;
-  --app-surface-alt: #f0fdf4;
-  --app-text: #064e3b;
-  --app-muted: #6b7280;
-  --app-border: #a7f3d0;
-  --app-danger: #dc2626;
-}
-
-html[data-app-theme='sunset'] {
-  --app-primary: #ea580c;
-  --app-primary-hover: #c2410c;
-  --app-primary-soft: #ffedd5;
-  --app-primary-text: #c2410c;
-  --app-accent: #db2777;
-  --app-accent-hover: #be185d;
-  --app-bg: #fff7ed;
-  --app-surface: #ffffff;
-  --app-surface-alt: #ffedd5;
-  --app-text: #7c2d12;
-  --app-muted: #78716c;
-  --app-border: #fed7aa;
-  --app-danger: #dc2626;
+  --app-header: #1e293b;
 }
 
 * {
@@ -97,15 +69,35 @@ body {
   overflow-x: hidden;
 }
 
+/* ——— وضع ليلي — تغطية شاملة للمكونات ——— */
 html[data-app-theme='dark'] .card,
 html[data-app-theme='dark'] .card-hover,
-html[data-app-theme='dark'] .stat-card {
+html[data-app-theme='dark'] .stat-card,
+html[data-app-theme='dark'] .modal-content {
   background-color: var(--app-surface);
   border-color: var(--app-border);
   color: var(--app-text);
 }
 
-html[data-app-theme='dark'] .input-field {
+html[data-app-theme='dark'] .app-header,
+html[data-app-theme='dark'] .app-sidebar,
+html[data-app-theme='dark'] .mobile-bottom-nav {
+  background-color: var(--app-header);
+  border-color: var(--app-border);
+  color: var(--app-text);
+}
+
+html[data-app-theme='dark'] .sidebar-link {
+  color: var(--app-muted);
+}
+
+html[data-app-theme='dark'] .sidebar-link:hover {
+  background-color: var(--app-surface-alt);
+  color: var(--app-text);
+}
+
+html[data-app-theme='dark'] .input-field,
+html[data-app-theme='dark'] select.input-field {
   background-color: var(--app-surface-alt);
   border-color: var(--app-border);
   color: var(--app-text);
@@ -114,6 +106,80 @@ html[data-app-theme='dark'] .input-field {
 html[data-app-theme='dark'] .table-header {
   background-color: var(--app-surface-alt);
   color: var(--app-muted);
+}
+
+html[data-app-theme='dark'] .bg-white {
+  background-color: var(--app-surface) !important;
+}
+
+html[data-app-theme='dark'] .bg-gray-50 {
+  background-color: var(--app-bg) !important;
+}
+
+html[data-app-theme='dark'] .bg-gray-100 {
+  background-color: var(--app-surface-alt) !important;
+}
+
+html[data-app-theme='dark'] .text-gray-900,
+html[data-app-theme='dark'] .text-gray-800 {
+  color: var(--app-text) !important;
+}
+
+html[data-app-theme='dark'] .text-gray-700,
+html[data-app-theme='dark'] .text-gray-600,
+html[data-app-theme='dark'] .text-gray-500 {
+  color: var(--app-muted) !important;
+}
+
+html[data-app-theme='dark'] .border-gray-200,
+html[data-app-theme='dark'] .border-gray-100 {
+  border-color: var(--app-border) !important;
+}
+
+html[data-app-theme='dark'] .btn-secondary {
+  background-color: var(--app-surface-alt);
+  color: var(--app-text);
+}
+
+html[data-app-theme='dark'] .btn-secondary:hover:not(:disabled) {
+  background-color: var(--app-border);
+}
+
+html[data-app-theme='dark'] .hover\:bg-gray-50:hover,
+html[data-app-theme='dark'] .hover\:bg-gray-100:hover {
+  background-color: var(--app-surface-alt) !important;
+}
+
+/* تبديل نهاري / ليلي في الإعدادات */
+.theme-mode-toggle {
+  display: flex;
+  padding: 0.25rem;
+  background: var(--app-surface-alt);
+  border: 1px solid var(--app-border);
+  border-radius: 0.75rem;
+  gap: 0.25rem;
+}
+
+.theme-mode-btn {
+  flex: 1;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--app-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.theme-mode-btn.active {
+  background: var(--app-surface);
+  color: var(--app-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+html[data-app-theme='dark'] .theme-mode-btn.active {
+  background: var(--app-primary-soft);
+  color: var(--app-primary-text);
 }
 
 /* ——— Touch-friendly controls ——— */

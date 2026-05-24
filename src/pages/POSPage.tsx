@@ -62,6 +62,10 @@ export default function POSPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [showBarcodeField, setShowBarcodeField] = useState(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 1024
+  );
 
   const printReceipt = (invoice: Invoice) => {
     const paymentTypeLabel = invoice.payment_type === 'cash' ? 'نقدي' : invoice.payment_type === 'debt' ? 'دين' : 'دفع جزئي';
@@ -143,8 +147,26 @@ export default function POSPage() {
   useEffect(() => {
     fetchProducts();
     fetchCustomers();
-    barcodeInputRef.current?.focus();
+
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const updateLayout = () => setIsMobileLayout(!mq.matches);
+    updateLayout();
+    mq.addEventListener('change', updateLayout);
+
+    if (mq.matches && window.matchMedia('(pointer: fine)').matches) {
+      setTimeout(() => barcodeInputRef.current?.focus(), 100);
+    }
+
+    return () => mq.removeEventListener('change', updateLayout);
   }, []);
+
+  const dismissKeyboard = () => {
+    barcodeInputRef.current?.blur();
+    searchInputRef.current?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -278,7 +300,7 @@ export default function POSPage() {
     setShowSearch(false);
     setSearchTerm('');
     setSearchResults([]);
-    barcodeInputRef.current?.focus();
+    dismissKeyboard();
   };
 
   const updateQuantity = (productId: string, delta: number) => {
@@ -500,18 +522,49 @@ export default function POSPage() {
 
       <div className={`pos-products-panel ${cart.length > 0 ? 'has-cart-bar' : ''}`}>
         <div className="pos-search-bar mb-2 shrink-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="relative">
-              <Barcode className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" style={{ color: 'var(--pos-muted)' }} />
-              <input
-                ref={barcodeInputRef}
-                type="text"
-                onKeyDown={handleBarcodeScan}
-                className="input-field pr-11"
-                placeholder="امسح الباركود..."
-                dir="ltr"
-              />
-            </div>
+          <div className={`grid gap-2 ${isMobileLayout ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+            {isMobileLayout ? (
+              showBarcodeField ? (
+                <div className="relative">
+                  <Barcode className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" style={{ color: 'var(--pos-muted)' }} />
+                  <input
+                    ref={barcodeInputRef}
+                    type="text"
+                    inputMode="text"
+                    autoComplete="off"
+                    onKeyDown={handleBarcodeScan}
+                    onBlur={() => setShowBarcodeField(false)}
+                    className="input-field pr-11"
+                    placeholder="امسح الباركود..."
+                    dir="ltr"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBarcodeField(true);
+                    setTimeout(() => barcodeInputRef.current?.focus(), 50);
+                  }}
+                  className="btn-secondary w-full flex items-center justify-center gap-2 min-h-[44px]"
+                >
+                  <Barcode className="w-5 h-5" />
+                  مسح باركود
+                </button>
+              )
+            ) : (
+              <div className="relative">
+                <Barcode className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" style={{ color: 'var(--pos-muted)' }} />
+                <input
+                  ref={barcodeInputRef}
+                  type="text"
+                  onKeyDown={handleBarcodeScan}
+                  className="input-field pr-11"
+                  placeholder="امسح الباركود..."
+                  dir="ltr"
+                />
+              </div>
+            )}
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" style={{ color: 'var(--pos-muted)' }} />
               <input
@@ -530,6 +583,7 @@ export default function POSPage() {
                       <button
                         key={product.id}
                         type="button"
+                        onPointerDown={(e) => e.preventDefault()}
                         onClick={() => addToCart(product)}
                         className="pos-dropdown-item w-full p-3 text-right flex items-center justify-between border-b last:border-0"
                         style={{ borderColor: 'var(--pos-border)' }}
@@ -560,6 +614,7 @@ export default function POSPage() {
               <button
                 key={product.id}
                 type="button"
+                onPointerDown={(e) => e.preventDefault()}
                 onClick={() => addToCart(product)}
                 className="pos-product-btn"
               >

@@ -5,9 +5,9 @@ import { useTheme } from '../contexts/ThemeContext';
 import {
   APP_THEMES,
   getThemePrimaryColor,
-  isAppThemeId,
-  type AppThemeId,
+  normalizeAppThemeId,
 } from '../lib/appThemes';
+import { Moon, Sun } from 'lucide-react';
 import BackupSection from '../components/BackupSection';
 import {
   Settings,
@@ -31,7 +31,7 @@ export default function SettingsPage() {
     company_phone: '',
     invoice_prefix: 'INV',
     currency_name: 'دينار عراقي',
-    app_theme: 'blue',
+    app_theme: 'light',
     primary_color: '#2563eb',
     thermal_printer_width: '80',
   });
@@ -57,9 +57,7 @@ export default function SettingsPage() {
           settingsMap[item.key] = item.value;
         });
 
-        const loadedTheme = isAppThemeId(settingsMap.app_theme)
-          ? settingsMap.app_theme
-          : 'blue';
+        const loadedTheme = normalizeAppThemeId(settingsMap.app_theme);
 
         setSettings({
           company_name: settingsMap.company_name || '',
@@ -100,9 +98,7 @@ export default function SettingsPage() {
         if (error) throw error;
       }
 
-      if (isAppThemeId(settings.app_theme)) {
-        setTheme(settings.app_theme);
-      }
+      setTheme(normalizeAppThemeId(settings.app_theme));
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -281,57 +277,47 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Theme Settings — site-wide */}
+        {/* نهاري / ليلي — كامل الموقع */}
         <div className="card p-6">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
               <Palette className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">ثيم النظام</h2>
-              <p className="text-sm text-gray-500">يطبّق على كل الصفحات بما فيها نقطة البيع</p>
+              <h2 className="font-semibold text-gray-900">المظهر</h2>
+              <p className="text-sm text-gray-500">نهاري أو ليلي لكل النظام</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {APP_THEMES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => {
-                  setSettings({
-                    ...settings,
-                    app_theme: t.id,
-                    primary_color: t.primaryColor,
-                  });
-                  setTheme(t.id);
-                }}
-                className={`p-4 rounded-xl border-2 text-right transition-all min-h-[44px] ${
-                  (settings.app_theme || theme) === t.id
-                    ? 'border-gray-900 ring-2 ring-offset-2'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                style={
-                  (settings.app_theme || theme) === t.id
-                    ? { borderColor: 'var(--app-primary)', boxShadow: '0 0 0 2px var(--app-primary-soft)' }
-                    : undefined
-                }
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-full shrink-0 border-2 border-white shadow"
-                    style={{ backgroundColor: t.swatch }}
-                  />
-                  <div className="min-w-0">
-                    <p className="font-semibold text-gray-900">{t.label}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{t.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+          <div className="theme-mode-toggle" role="group" aria-label="وضع العرض">
+            {APP_THEMES.map((t) => {
+              const active = normalizeAppThemeId(settings.app_theme || theme) === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setSettings({
+                      ...settings,
+                      app_theme: t.id,
+                      primary_color: getThemePrimaryColor(t.id),
+                    });
+                    setTheme(t.id);
+                  }}
+                  className={`theme-mode-btn flex items-center justify-center gap-2 ${active ? 'active' : ''}`}
+                >
+                  {t.id === 'light' ? (
+                    <Sun className="w-5 h-5 shrink-0" />
+                  ) : (
+                    <Moon className="w-5 h-5 shrink-0" />
+                  )}
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
-          <p className="text-xs text-gray-500 mt-4">
-            الثيم الحالي: <strong>{APP_THEMES.find((t) => t.id === theme)?.label}</strong> — اضغط «حفظ الإعدادات» لحفظه لجميع الأجهزة.
+          <p className="text-xs text-gray-500 mt-3">
+            الوضع الحالي: <strong>{theme === 'dark' ? 'ليلي' : 'نهاري'}</strong> — احفظ الإعدادات لتثبيته.
           </p>
         </div>
 
