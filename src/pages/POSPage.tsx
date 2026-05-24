@@ -89,9 +89,9 @@ export default function POSPage() {
       ? '<div class="total-row debt"><span>' + formatCurrency(invoice.remaining_amount) + '</span><span>المتبقي (دين):</span></div>'
       : '';
 
-    // Show customer's current debt balance if exists
-    const customerDebtHtml = selectedCustomer && selectedCustomer.debt_balance > 0
-      ? '<div class="total-row" style="color: #dc2626; font-size: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;"><span>' + formatCurrency(selectedCustomer.debt_balance) + '</span><span>الدين السابق للعميل:</span></div>'
+    // Show customer's current debt balance if customer exists
+    const customerDebtHtml = invoice.customer
+      ? '<div class="total-row" style="color: #dc2626; font-size: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;"><span>' + formatCurrency(invoice.customer.debt_balance) + '</span><span>الدين السابق للعميل:</span></div>'
       : '';
 
     const html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
@@ -412,7 +412,7 @@ export default function POSPage() {
             created_by: user?.id,
           },
         ])
-        .select()
+        .select('*, customer:customers(*)')
         .single();
 
       if (invoiceError) throw invoiceError;
@@ -468,13 +468,20 @@ export default function POSPage() {
 
       // Update customer debt if applicable
       if (selectedCustomer && remaining > 0) {
+        const newDebtBalance = selectedCustomer.debt_balance + remaining;
         await supabase
           .from('customers')
           .update({
-            debt_balance: selectedCustomer.debt_balance + remaining,
+            debt_balance: newDebtBalance,
             updated_at: new Date().toISOString(),
           })
           .eq('id', selectedCustomer.id);
+
+        // Update local customer state
+        setSelectedCustomer({
+          ...selectedCustomer,
+          debt_balance: newDebtBalance,
+        });
       }
 
       // Create payment record
